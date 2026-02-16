@@ -21,7 +21,5 @@ func dropSetStmt(s *svr, rqid int64, cmd *ast.DropSetStmt) *ccms.Result {
 		return cmderr("error dropping set \"" + cmd.SetName + "\"")
 	}
 
-	return &ccms.Result{
-		Status: "drop set",
-	}
+	return ccms.NewResult("drop set")
 }

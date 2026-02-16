@@ -27,7 +27,5 @@ func deleteStmt(s *svr, rqid int64, cmd *ast.DeleteStmt) *ccms.Result {
 		return cmderr(fmt.Sprintf("deleting from %q: %v", cmd.From, err))
 	}
 
-	return &ccms.Result{
-		Status: "delete",
-	}
+	return ccms.NewResult("delete")
 }

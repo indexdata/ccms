@@ -11,42 +11,25 @@ import (
 )
 
 func showStmt(s *svr, cmd *ast.ShowStmt) *ccms.Result {
+	result := ccms.NewResult("show")
 	switch cmd.Name {
 	case "filters":
-		return &ccms.Result{
-			Status: "show",
-			Fields: []*ccms.FieldDescription{
-				&ccms.FieldDescription{
-					Name: "filter",
-					Type: "text",
-				},
-			},
-			Data: []*ccms.DataRow{},
-		}
+		result.AddField("filter_name", "text")
 	case "sets":
-		return &ccms.Result{
-			Status: "show",
-			Fields: []*ccms.FieldDescription{
-				&ccms.FieldDescription{
-					Name: "set",
-					Type: "text",
-				},
-			},
-			Data: data(s.cat),
-		}
+		result.AddField("set_name", "text")
+		addData(s.cat, result)
 	default:
 		return cmderr("unknown variable \"" + cmd.Name + "\"")
 	}
+	return result
 }
 
-func data(cat *catalog.Catalog) []*ccms.DataRow {
-	rows := make([]*ccms.DataRow, 0)
+func addData(cat *catalog.Catalog, result *ccms.Result) {
 	sets := cat.AllSets()
 	sortSetNames(sets)
 	for i := range sets {
-		rows = append(rows, &ccms.DataRow{Values: []any{sets[i]}})
+		result.AddData([]any{sets[i]})
 	}
-	return rows
 }
 
 func sortSetNames(sets []string) {

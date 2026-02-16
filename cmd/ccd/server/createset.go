@@ -25,7 +25,5 @@ func createSetStmt(s *svr, rqid int64, cmd *ast.CreateSetStmt) *ccms.Result {
 		return cmderr("error writing set \"" + cmd.SetName + "\"")
 	}
 
-	return &ccms.Result{
-		Status: "create set",
-	}
+	return ccms.NewResult("create set")
 }

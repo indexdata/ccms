@@ -171,34 +171,27 @@ func runClient() error {
 		elapsedTime := time.Since(startTime).Seconds()
 		elapsedTimeStr := fmt.Sprintf("[%.4f s]", elapsedTime)
 
-		rlen := len(resp.Results)
-		if rlen == 0 {
-			continue
-		}
 		if err = pager.Setup(); err != nil {
 			return err
 		}
-		for i := range resp.Results {
-			if rlen > 1 {
-				fmt.Printf("{%d}\n", i+1)
+		i := 0
+		for result := range resp.Results() {
+			if i > 0 {
+				fmt.Printf("\n")
 			}
-			result := resp.Results[i]
-			if result.Status == "error" {
-				eout.Error("error: %s", result.Message)
+			if result.Status() == "error" {
+				eout.Error("error: %s", result.Message())
 				continue
 			}
 			header := true
-			if result.Status == "info" {
+			if result.Status() == "info" {
 				header = false
 			}
-			if result.Status == "ping" {
+			if result.Status() == "ping" {
 				continue
 			}
-			if result.Status == "show" {
-				header = false
-			}
 
-			switch result.Status {
+			switch result.Status() {
 			case "info":
 				fallthrough
 			case "show":
@@ -206,20 +199,22 @@ func runClient() error {
 			case "select":
 				w := tabwriter.NewWriter(os.Stdout, 1, 1, 2, ' ', 0)
 				if header {
-					for i := range result.Fields {
-						if i != 0 {
-							fmt.Fprint(w, "\t")
-						}
-						fmt.Fprint(w, result.Fields[i].Name)
-					}
-					fmt.Fprint(w, "\n")
-				}
-				for i := range result.Data {
-					for j := range result.Data[i].Values {
+					fields := result.Fields()
+					for j := range fields {
 						if j != 0 {
 							fmt.Fprint(w, "\t")
 						}
-						fmt.Fprint(w, result.Data[i].Values[j])
+						fmt.Fprint(w, fields[j].Name())
+					}
+					fmt.Fprint(w, "\n")
+				}
+				for data := range result.Data() {
+					values := data.Values()
+					for j := range values {
+						if j != 0 {
+							fmt.Fprint(w, "\t")
+						}
+						fmt.Fprint(w, values[j])
 					}
 					fmt.Fprint(w, "\n")
 				}
@@ -228,8 +223,15 @@ func runClient() error {
 					fmt.Printf("Type \"\\h <command>\" for more information.\n")
 				}
 			default:
-				fmt.Println(result.Status)
+				fmt.Println(result.Status())
 			}
+			i++
+		}
+		if i == 0 {
+			continue
+		}
+		if i > 1 {
+			fmt.Println()
 		}
 		if option.Timing {
 			fmt.Println(elapsedTimeStr)

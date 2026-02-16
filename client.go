@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"iter"
 	"net"
 	"net/http"
 
@@ -27,26 +28,205 @@ type Client struct {
 
 // response from CCMS server
 type Response struct {
-	Results []*Result `json:"results"` // result for each command
+	resp *jsonResponse
+}
+
+// return an initialized response
+func NewResponse() *Response {
+	return &Response{
+		resp: &jsonResponse{
+			Results: make([]*jsonResult, 0),
+		},
+	}
+}
+
+// encode the reponse as JSON
+func (r *Response) Encode(w http.ResponseWriter) error {
+	if err := json.NewEncoder(w).Encode(*(r.resp)); err != nil {
+		return err
+	}
+	return nil
+}
+
+// return an iterator over results contained in the response
+func (r *Response) Results() iter.Seq[Result] {
+	return func(yield func(Result) bool) {
+		res := r.resp.Results
+		for i := range res {
+			if !yield(Result{
+				status:  res[i].Status,
+				message: res[i].Message,
+				fields:  res[i].exportFields(),
+				data:    res[i].exportData(),
+			}) {
+				return
+			}
+		}
+	}
+}
+
+// add a result to the response
+func (r *Response) AddResult(result *Result) {
+	r.resp.Results = append(r.resp.Results, &jsonResult{
+		Status:  result.status,
+		Message: result.message,
+		Fields:  result.jsonFields(),
+		Data:    result.jsonData(),
+	})
+}
+
+type jsonResponse struct {
+	Results []*jsonResult `json:"results"` // result for each command
 }
 
 // result of a command
 type Result struct {
-	Status  string              `json:"status"`            // status of command, or "error"
-	Message string              `json:"message,omitempty"` // error message
-	Fields  []*FieldDescription `json:"fields,omitempty"`  // attribute metadata for query result
-	Data    []*DataRow          `json:"data,omitempty"`    // query result data
+	status  string             // status of command, or "error"
+	message string             // error message
+	fields  []FieldDescription // attribute metadata for query result
+	data    []DataRow          // query result data
+}
+
+// return an initialized result
+func NewResult(status string) *Result {
+	return &Result{
+		status: status,
+		fields: make([]FieldDescription, 0),
+		data:   make([]DataRow, 0),
+	}
+}
+
+// return the result status
+func (r *Result) Status() string {
+	return r.status
+}
+
+// return the result message
+func (r *Result) Message() string {
+	return r.message
+}
+
+// add a message to this result
+func (r *Result) AddMessage(message string) {
+	r.message = message
+}
+
+// return the field metadata in this result
+func (r *Result) Fields() []FieldDescription {
+	return r.fields
+}
+
+// add metadata for a field to this result
+func (r *Result) AddField(name, dataType string) {
+	r.fields = append(r.fields, FieldDescription{
+		name:     name,
+		dataType: dataType,
+	})
+}
+
+// return an iterator over data rows contained in the result
+func (r *Result) Data() iter.Seq[DataRow] {
+	return func(yield func(DataRow) bool) {
+		data := r.data
+		for i := range data {
+			if !yield(DataRow{
+				values: data[i].values,
+			}) {
+				return
+			}
+		}
+	}
+}
+
+// add a data row to this result
+func (r *Result) AddData(values []any) {
+	r.data = append(r.data, DataRow{values: values})
+}
+
+func (r *Result) jsonFields() []jsonFieldDescription {
+	fields := make([]jsonFieldDescription, 0)
+	for i := range r.fields {
+		fields = append(fields, jsonFieldDescription{
+			Name:     r.fields[i].name,
+			DataType: r.fields[i].dataType,
+		})
+	}
+	return fields
+}
+
+func (r *Result) jsonData() []jsonDataRow {
+	data := make([]jsonDataRow, 0)
+	for i := range r.data {
+		data = append(data, jsonDataRow{
+			Values: r.data[i].values,
+		})
+	}
+	return data
+}
+
+type jsonResult struct {
+	Status  string                 `json:"status"`
+	Message string                 `json:"message,omitempty"`
+	Fields  []jsonFieldDescription `json:"fields,omitempty"`
+	Data    []jsonDataRow          `json:"data,omitempty"`
+}
+
+func (j *jsonResult) exportFields() []FieldDescription {
+	fields := make([]FieldDescription, 0)
+	for i := range j.Fields {
+		fields = append(fields, FieldDescription{
+			name:     j.Fields[i].Name,
+			dataType: j.Fields[i].DataType,
+		})
+	}
+	return fields
+}
+
+func (j *jsonResult) exportData() []DataRow {
+	data := make([]DataRow, 0)
+	for i := range j.Data {
+		data = append(data, DataRow{values: j.Data[i].Values})
+	}
+	return data
 }
 
 // metadata for an attribute
 type FieldDescription struct {
-	Name string `json:"name"` // attribute name
-	Type string `json:"type"` // data type
+	name     string // attribute name
+	dataType string // data type
+}
+
+// return the field name
+func (f *FieldDescription) Name() string {
+	return f.name
+}
+
+// return the field data type
+func (f *FieldDescription) DataType() string {
+	return f.dataType
+}
+
+type jsonFieldDescription struct {
+	Name     string `json:"name"`
+	DataType string `json:"type"`
 }
 
 // a row of data
 type DataRow struct {
-	Values []any `json:"values"` // data values
+	values []any // data values
+}
+
+//func NewDataRow(values []any) *DataRow {
+//        return &DataRow{values: values}
+//}
+
+// return the data values
+func (d *DataRow) Values() []any {
+	return d.values
+}
+
+type jsonDataRow struct {
+	Values []any `json:"values"`
 }
 
 // send one or more commands to the server and return the response
@@ -68,7 +248,7 @@ func (c *Client) Send(cmd string) (*Response, error) {
 	}
 
 	var resp Response
-	if err = readResponse(httprs, &resp); err != nil {
+	if err = readResponse(httprs, &resp.resp); err != nil {
 		return nil, err
 	}
 	return &resp, nil

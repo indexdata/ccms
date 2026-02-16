@@ -184,9 +184,8 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 	var req protocol.Request
 	if err := ReadRequest(w, r, &req); err != nil {
 		log.Info("[%d] %s - error: %v", rqid, addr, err)
-		resp := &ccms.Response{
-			Results: []*ccms.Result{cmderr(err.Error())},
-		}
+		resp := ccms.NewResponse()
+		resp.AddResult(cmderr(err.Error()))
 		if err1 := sendResponse(w, resp); err1 != nil {
 			log.Info("[%d] internal error: %v", rqid, err1)
 		}
@@ -210,8 +209,8 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 	//        return
 	//}
 	//log.Info("parsed: %#v", node)
+	resp := ccms.NewResponse()
 	var result *ccms.Result
-	results := make([]*ccms.Result, 0)
 	cmds = node.(*ast.ParseTree).Commands
 	for i := range cmds {
 		switch cmd := cmds[i].(type) {
@@ -226,7 +225,7 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 		case *ast.InsertStmt:
 			result = insertStmt(s, rqid, cmd)
 		case *ast.PingStmt:
-			result = &ccms.Result{Status: "ping"}
+			result = ccms.NewResult("ping")
 		case *ast.SelectStmt:
 			result = selectStmt(s, rqid, cmd)
 		case *ast.ShowStmt:
@@ -237,19 +236,16 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 			firstField := strings.Fields(req.Commands)[0]
 			var b strings.Builder
 			parser.WriteCarets(&b, 0, len(firstField))
-			result = &ccms.Result{
-				Status: "error",
-				Message: fmt.Sprintf("syntax error near %s\n%s\n%s",
-					parser.Near(firstField), req.Commands, b.String()),
-			}
+			result = ccms.NewResult("error")
+			result.AddMessage(fmt.Sprintf("syntax error near %s\n%s\n%s",
+				parser.Near(firstField), req.Commands, b.String()))
 		}
-		results = append(results, result)
-		if result.Status == "error" {
-			log.Info("[%d] error: %s", rqid, result.Message)
+		resp.AddResult(result)
+		if result.Status() == "error" {
+			log.Info("[%d] error: %s", rqid, result.Message())
 			break
 		}
 	}
-	resp := &ccms.Response{Results: results}
 	if err := sendResponse(w, resp); err != nil {
 		log.Info("[%d] internal error: %v", rqid, err)
 	}
@@ -258,17 +254,16 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 func sendResponse(w http.ResponseWriter, resp *ccms.Response) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(*resp); err != nil {
+	if err := resp.Encode(w); err != nil {
 		return err
 	}
 	return nil
 }
 
 func cmderr(message string) *ccms.Result {
-	return &ccms.Result{
-		Status:  "error",
-		Message: message,
-	}
+	result := ccms.NewResult("error")
+	result.AddMessage(message)
+	return result
 }
 
 func returnError(w http.ResponseWriter, errString string, statusCode int) {
@@ -355,15 +350,11 @@ func HTTPError(w http.ResponseWriter, errString string, code int) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(code)
-	m := &ccms.Response{
-		Results: []*ccms.Result{
-			{
-				Status:  "error",
-				Message: errString,
-			},
-		},
-	}
-	if err := json.NewEncoder(w).Encode(m); err != nil {
+	m := ccms.NewResponse()
+	result := ccms.NewResult("error")
+	result.AddMessage(errString)
+	m.AddResult(result)
+	if err := m.Encode(w); err != nil {
 		// TODO error handling
 		panic(err)
 	}

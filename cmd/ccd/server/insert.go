@@ -40,7 +40,5 @@ func insertStmt(s *svr, rqid int64, cmd *ast.InsertStmt) *ccms.Result {
 		return cmderr(fmt.Sprintf("inserting data into %q: %v", cmd.Into, err))
 	}
 
-	return &ccms.Result{
-		Status: "insert",
-	}
+	return ccms.NewResult("insert")
 }

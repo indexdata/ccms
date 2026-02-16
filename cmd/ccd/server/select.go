@@ -63,7 +63,12 @@ func selectStmt(s *svr, rqid int64, cmd *ast.SelectStmt) *ccms.Result {
 		panic(fmt.Sprintf("selecting from reserve: %v", err))
 	}
 	defer rows.Close()
-	data := make([]*ccms.DataRow, 0)
+	result := ccms.NewResult("select")
+	result.AddField("id", "bigint")
+	result.AddField("author", "text")
+	result.AddField("title", "text")
+	result.AddField("full_vendor_name", "text")
+	result.AddField("availability", "text")
 	for rows.Next() {
 		var id int64
 		var author, title, full_vendor_name, availability string
@@ -71,40 +76,12 @@ func selectStmt(s *svr, rqid int64, cmd *ast.SelectStmt) *ccms.Result {
 		if err != nil {
 			panic(fmt.Sprintf("reading from reserve: %v", err))
 		}
-		data = append(data, &ccms.DataRow{
-			Values: []any{id, author, title, full_vendor_name, availability},
-		})
+		result.AddData([]any{id, author, title, full_vendor_name, availability})
 	}
 	if err = rows.Err(); err != nil {
 		panic(fmt.Sprintf("reading from reserve: %v", err))
 	}
-
-	return &ccms.Result{
-		Status: "select",
-		Fields: []*ccms.FieldDescription{
-			{
-				Name: "id",
-				Type: "bigint",
-			},
-			{
-				Name: "author",
-				Type: "text",
-			},
-			{
-				Name: "title",
-				Type: "text",
-			},
-			{
-				Name: "full_vendor_name",
-				Type: "text",
-			},
-			{
-				Name: "availability",
-				Type: "text",
-			},
-		},
-		Data: data,
-	}
+	return result
 }
 
 func processQuery(s *svr, rqid int64, query *ast.QueryClause) error {
