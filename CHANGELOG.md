@@ -1,3 +1,7 @@
+# v0.0.19
+
+* Upgraded to Go 1.26.
+
 # v0.0.18
 
 * Added `delete` command.  See also:
