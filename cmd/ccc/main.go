@@ -251,10 +251,6 @@ func runClient() error {
 		if l == "quit" || l == "quit;" || l == "exit" || l == "exit;" {
 			break
 		}
-		if line[len(line)-1] != ';' {
-			eout.Error(errorPrefix + " missing semicolon")
-			continue
-		}
 		startTime := time.Now()
 		resp, err := client.Send(line)
 		if err != nil {

@@ -11,6 +11,7 @@ import (
 	"iter"
 	"net"
 	"net/http"
+	"unicode"
 
 	"github.com/indexdata/ccms/internal/crypto"
 	"github.com/indexdata/ccms/internal/eout"
@@ -254,6 +255,9 @@ type jsonDataRow struct {
 
 // send one or more commands to the server and return the response
 func (c *Client) Send(cmd string) (*Response, error) {
+	if err := scanForErrors(cmd); err != nil {
+		return nil, err
+	}
 	var rq = &protocol.Request{Commands: cmd}
 	// send the request
 	var httprs *http.Response
@@ -316,6 +320,26 @@ func (c *Client) Send(cmd string) (*Response, error) {
 		// eout.Info("enabled: %s", rq.Command)
 		return resp, nil
 	*/
+}
+
+func scanForErrors(cmd string) error {
+	var e rune // last non-space rune
+	var f bool // true if at least one non-space rune was found
+	for _, r := range cmd {
+		if !unicode.IsSpace(r) {
+			e = r
+			if !f {
+				f = true
+			}
+		}
+	}
+	if !f {
+		return errors.New("command not specified")
+	}
+	if e != ';' {
+		return errors.New("missing semicolon")
+	}
+	return nil
 }
 
 // return a hashed password for use with the "create user" command
