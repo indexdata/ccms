@@ -12,6 +12,16 @@ const (
 
 /* statements */
 
+type AlterFundStmt struct {
+	Fund          string
+	Property      string
+	Action        AlterAction
+	Value         string
+	StringLiteral bool
+}
+
+func (*AlterFundStmt) node() {}
+
 type AlterProjectStmt struct {
 	Project       string
 	Property      string
@@ -66,6 +76,12 @@ type DeleteStmt struct {
 }
 
 func (*DeleteStmt) node() {}
+
+type DropFundStmt struct {
+	Fund string
+}
+
+func (*DropFundStmt) node() {}
 
 type DropProjectStmt struct {
 	Project string

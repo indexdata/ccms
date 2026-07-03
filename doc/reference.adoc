@@ -2,6 +2,8 @@
 
 === Commands
 
+include::alterfund.adoc[]
+
 include::alterproject.adoc[]
 
 include::archiveproject.adoc[]
@@ -17,6 +19,8 @@ include::createset.adoc[]
 include::createuser.adoc[]
 
 include::delete.adoc[]
+
+include::dropfund.adoc[]
 
 include::dropset.adoc[]
 

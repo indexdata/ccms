@@ -1,5 +1,6 @@
 #!/bin/sh
 asciidoctor -a docinfo=shared ./doc/*.adoc
+w3m ./doc/alterfund.html | head -n -1 > ./cmd/ccd/doc/alterfund.txt
 w3m ./doc/alterproject.html | head -n -1 > ./cmd/ccd/doc/alterproject.txt
 w3m ./doc/archiveproject.html | head -n -1 > ./cmd/ccd/doc/archiveproject.txt
 w3m ./doc/createfilter.html | head -n -1 > ./cmd/ccd/doc/createfilter.txt
@@ -8,6 +9,7 @@ w3m ./doc/createproject.html | head -n -1 > ./cmd/ccd/doc/createproject.txt
 w3m ./doc/createset.html | head -n -1 > ./cmd/ccd/doc/createset.txt
 w3m ./doc/createuser.html | head -n -1 > ./cmd/ccd/doc/createuser.txt
 w3m ./doc/delete.html | head -n -1 > ./cmd/ccd/doc/delete.txt
+w3m ./doc/dropfund.html | head -n -1 > ./cmd/ccd/doc/dropfund.txt
 w3m ./doc/dropproject.html | head -n -1 > ./cmd/ccd/doc/dropproject.txt
 w3m ./doc/dropset.html | head -n -1 > ./cmd/ccd/doc/dropset.txt
 #w3m ./doc/info.html | head -n -1 > ./cmd/ccd/doc/info.txt

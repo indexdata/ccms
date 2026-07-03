@@ -240,6 +240,8 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 	for i := range cmds {
 		var result *ccms.Result
 		switch cmd := cmds[i].(type) {
+		case *ast.AlterFundStmt:
+			result = alterFundStmt(s, dbtx, rqid, cmd)
 		case *ast.AlterProjectStmt:
 			result = alterProjectStmt(s, dbtx, rqid, cmd)
 		case *ast.ArchiveProjectStmt:
@@ -256,6 +258,8 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 			result = createUserStmt(s, dbtx, rqid, cmd)
 		case *ast.DeleteStmt:
 			result = deleteStmt(s, dbtx, rqid, cmd)
+		case *ast.DropFundStmt:
+			result = dropFundStmt(s, dbtx, rqid, cmd)
 		// case *ast.DropProjectStmt:
 		// 	result = dropProjectStmt(s,d, rqid, cmd)
 		case *ast.DropSetStmt:

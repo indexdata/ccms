@@ -1,3 +1,5 @@
+* Added commands `show fund`, `alter fund`, and `drop fund`.
+
 * The `show projects` command now returns the project title.
 
 * Added `create filter` and `show filters` commands and `filter()`

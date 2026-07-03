@@ -1,0 +1,20 @@
+drop fund
+
+Remove a fund
+
+drop fund fund_name
+
+Description
+
+The drop fund command removes a fund from the system.
+
+Parameters
+
+fund_name The name of the fund.
+
+Examples
+
+Remove a fund f:
+
+drop fund f;
+

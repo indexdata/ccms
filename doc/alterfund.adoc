@@ -1,0 +1,58 @@
+==== alter fund
+
+Change the definition of a fund
+
+[source,subs="verbatim,quotes"]
+----
+alter fund `*_fund_name_*`
+    alter property `*_property_name_*` set `*_value_*`
+----
+
+[discrete]
+===== Description
+
+The `alter fund` command changes the definition of a fund.
+
+The `alter property` clause changes a property in the fund's metadata.
+
+[discrete]
+===== Parameters
+
+[frame=none,grid=none,cols="1,2"]
+|===
+|`*_fund_name_*`
+|The name of the project.
+
+|`*_property_name_*`
+|The name of the property in the project metadata.
+
+|`*_value_*`
+|The value of a single-value property.
+|===
+
+[discrete]
+===== Properties
+
+[%header,width=75%,cols="3,3,10"]
+|===
+|Property
+|Type
+|Value
+
+|`name`
+|single-value
+|identifier
+
+|`title`
+|single-value
+|text
+|===
+
+[discrete]
+===== Examples
+
+Set the title of fund `f` to `Main Fund`:
+
+----
+alter fund f alter property title set 'Main Fund';
+----

@@ -19,6 +19,7 @@ import (
 %type <node> basic_stmt
 %type <nodeList> stmt
 %type <nodeList> stmt_list
+%type <node> alter_fund_stmt
 %type <node> alter_project_stmt
 %type <node> archive_project_stmt
 %type <node> create_filter_stmt
@@ -27,6 +28,7 @@ import (
 %type <node> create_set_stmt
 %type <node> create_user_stmt
 %type <node> delete_stmt
+%type <node> drop_fund_stmt
 %type <node> drop_project_stmt
 %type <node> drop_set_stmt
 %type <node> info_stmt
@@ -143,7 +145,11 @@ stmt:
 		}
 
 basic_stmt:
-	alter_project_stmt
+	alter_fund_stmt
+		{
+			$$ = $1
+		}
+	| alter_project_stmt
 		{
 			$$ = $1
 		}
@@ -172,6 +178,10 @@ basic_stmt:
 			$$ = $1
 		}
 	| delete_stmt
+		{
+			$$ = $1
+		}
+	| drop_fund_stmt
 		{
 			$$ = $1
 		}
@@ -216,6 +226,16 @@ archive_project_stmt:
 	ARCHIVE PROJECT name ';'
 		{
 			$$ = &ast.ArchiveProjectStmt{Project: $3}
+		}
+
+alter_fund_stmt:
+	ALTER FUND name ALTER PROPERTY name SET name ';'
+		{
+			$$ = &ast.AlterFundStmt{Fund: $3, Property: $6, Action: ast.Set, Value: $8, StringLiteral: false}
+		}
+	| ALTER FUND name ALTER PROPERTY name SET SLITERAL ';'
+		{
+			$$ = &ast.AlterFundStmt{Fund: $3, Property: $6, Action: ast.Set, Value: ast.DecodeSLiteral($8), StringLiteral: true}
 		}
 
 alter_project_stmt:
@@ -276,6 +296,12 @@ delete_stmt:
 			$$ = &ast.DeleteStmt{From: $3, Where: $4}
 		}
 
+drop_fund_stmt:
+	DROP FUND name ';'
+		{
+			$$ = &ast.DropFundStmt{Fund: $3}
+		}
+
 drop_project_stmt:
 	DROP PROJECT name ';'
 		{
@@ -328,6 +354,10 @@ show_stmt:
 	| SHOW name IN PROJECT name ';'
 		{
 			$$ = &ast.ShowStmt{Type: $2, In: $5}
+		}
+	| SHOW FUND name ';'
+		{
+			$$ = &ast.ShowStmt{Type: "fund", Name: $3}
 		}
 	| SHOW PROJECT name ';'
 		{

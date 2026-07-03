@@ -614,6 +614,19 @@ func ProjectFundExists(db *dbx.DB, projectID, fundID int32) (bool, error) {
 	}
 }
 
+func ProjectsHavingFund(db *dbx.DB, fundID int32) ([]string, error) {
+	sql := "select p.name from ccms.project_fund pf join ccms.project p on pf.project_id=p.id where pf.fund_id=$1"
+	rows, err := db.Query(db.Ctx, sql, fundID)
+	if err != nil {
+		return nil, dberr.Error(err)
+	}
+	projects, err := pgx.CollectRows(rows, pgx.RowTo[string])
+	if err != nil {
+		return nil, err
+	}
+	return projects, nil
+}
+
 func objectFundExists(db *dbx.DB, project string, fundID int32) (bool, error) {
 	sql := "select 1 from " + project + ".object where fund_id=$1 limit 1"
 	var n int32
@@ -684,7 +697,7 @@ func projectTrackExists(db *dbx.DB, projectID, trackID int32) (bool, error) {
 	}
 }
 
-func AlterProjectSetProperty(db *dbx.DB, projectName, property, value string, stringLiteral bool) error {
+func AlterProjectSetProperty(db *dbx.DB, project, property, value string, stringLiteral bool) error {
 	switch property {
 	case "funds" /*"locations",*/, "origins", "destinations", "tracks":
 		return errors.New("property \"" + property + "\" is composite")
@@ -710,7 +723,7 @@ func AlterProjectSetProperty(db *dbx.DB, projectName, property, value string, st
 	}
 
 	sql := "update ccms.project set \"" + property + "\"=nullif($1, '') where name=$2"
-	if _, err := db.Exec(db.Ctx, sql, value, projectName); err != nil {
+	if _, err := db.Exec(db.Ctx, sql, value, project); err != nil {
 		return errors.New("updating project: " + dberr.String(err))
 	}
 	return nil
@@ -796,5 +809,5 @@ select coalesce(p.title, '') title,
 }
 
 func invalidValueError(property, value string) error {
-	return errors.New("invalid value for property \"" + property + "\": \"" + value + "\"")
+	return errors.New("invalid value \"" + value + "\" for property \"" + property + "\"")
 }

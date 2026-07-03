@@ -19,6 +19,12 @@ func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
 		if err := addShowFiltersData(db, result); err != nil {
 			return cmderr(err.Error())
 		}
+	case "fund":
+		result.AddField("property", "text")
+		result.AddField("value", "text")
+		if err := addShowFundData(db, result, cmd.Name); err != nil {
+			return cmderr(err.Error())
+		}
 	case "funds":
 		result.AddField("name", "text")
 		result.AddField("title", "text")
@@ -29,17 +35,17 @@ func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
 	//        result.AddField("name", "text")
 	//        result.AddField("users", "text")
 	//        addShowRolesData(s.cat, result)
+	case "project":
+		result.AddField("property", "text")
+		result.AddField("value", "text")
+		if err := addShowProjectData(db, result, cmd.Name); err != nil {
+			return cmderr(err.Error())
+		}
 	case "projects":
 		result.AddField("name", "text")
 		result.AddField("title", "text")
 		err := addShowProjectsData(db, result, cmd.Archived)
 		if err != nil {
-			return cmderr(err.Error())
-		}
-	case "project":
-		result.AddField("property", "text")
-		result.AddField("value", "text")
-		if err := addShowProjectData(db, result, cmd.Name); err != nil {
 			return cmderr(err.Error())
 		}
 	case "sets":
@@ -71,6 +77,17 @@ func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
 	return result
 }
 
+func addShowFundData(db *dbx.DB, result *ccms.Result, fund string) error {
+	prop, err := cat.FundProperties(db, fund)
+	if err != nil {
+		return err
+	}
+	for i := range prop {
+		result.AddData([]any{prop[i][0], prop[i][1]})
+	}
+	return nil
+}
+
 func addShowFundsData(db *dbx.DB, result *ccms.Result) error {
 	funds, err := cat.Funds(db)
 	if err != nil {
@@ -96,6 +113,17 @@ func addShowRolesData(db *dbx.DB, result *ccms.Result) error {
 	return nil
 }
 
+func addShowProjectData(db *dbx.DB, result *ccms.Result, project string) error {
+	prop, err := cat.ProjectProperties(db, project)
+	if err != nil {
+		return err
+	}
+	for i := range prop {
+		result.AddData([]any{prop[i][0], prop[i][1]})
+	}
+	return nil
+}
+
 func addShowProjectsData(db *dbx.DB, result *ccms.Result, archived bool) error {
 	projects, err := cat.Projects(db, archived)
 	if err != nil {
@@ -104,17 +132,6 @@ func addShowProjectsData(db *dbx.DB, result *ccms.Result, archived bool) error {
 	projects.Sort()
 	for i := range projects {
 		result.AddData([]any{projects[i].Name, projects[i].Title})
-	}
-	return nil
-}
-
-func addShowProjectData(db *dbx.DB, result *ccms.Result, projectName string) error {
-	prop, err := cat.ProjectProperties(db, projectName)
-	if err != nil {
-		return err
-	}
-	for i := range prop {
-		result.AddData([]any{prop[i][0], prop[i][1]})
 	}
 	return nil
 }

@@ -5,6 +5,13 @@ import (
 	"strings"
 )
 
+//go:embed alterfund.txt
+var alterFundTxt string
+
+func AlterFund() string {
+	return strings.TrimSpace(alterFundTxt)
+}
+
 //go:embed alterproject.txt
 var alterProjectTxt string
 
@@ -59,6 +66,13 @@ var deleteTxt string
 
 func Delete() string {
 	return strings.TrimSpace(deleteTxt)
+}
+
+//go:embed dropfund.txt
+var dropFundTxt string
+
+func DropFund() string {
+	return strings.TrimSpace(dropFundTxt)
 }
 
 //go:embed dropproject.txt

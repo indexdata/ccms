@@ -4,11 +4,13 @@ List the values of a system variable
 
 show filters
 
+show fund fund_name
+
 show funds
 
-show projects [ archived ]
-
 show project project_name
+
+show projects [ archived ]
 
 show sets [ in project project_name ]
 

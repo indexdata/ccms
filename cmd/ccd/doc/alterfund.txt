@@ -1,0 +1,34 @@
+alter fund
+
+Change the definition of a fund
+
+alter fund fund_name
+    alter property property_name set value
+
+Description
+
+The alter fund command changes the definition of a fund.
+
+The alter property clause changes a property in the fund’s metadata.
+
+Parameters
+
+fund_name     The name of the project.
+
+property_name The name of the property in the project metadata.
+
+value         The value of a single-value property.
+
+Properties
+
+Property     Type       Value
+name     single-value identifier
+
+title    single-value text
+
+Examples
+
+Set the title of fund f to Main Fund:
+
+alter fund f alter property title set 'Main Fund';
+

@@ -6,11 +6,13 @@ List the values of a system variable
 ----
 show filters
 
+show fund `*_fund_name_*`
+
 show funds
 
-show projects [ archived ]
-
 show project `*_project_name_*`
+
+show projects [ archived ]
 
 show sets [ in project `*_project_name_*` ]
 

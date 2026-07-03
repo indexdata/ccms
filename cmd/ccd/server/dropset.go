@@ -13,7 +13,7 @@ func dropSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DropSetStmt) *ccms.Res
 
 	validTargetSet, err := cat.IsValidTargetSet(db, set)
 	if err != nil {
-		return cmderr("checking if target set valid: " + err.Error())
+		return cmderr(err.Error())
 	}
 	if !validTargetSet {
 		return cmderr("invalid target set \"" + cmd.Set + "\"")
@@ -21,7 +21,7 @@ func dropSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DropSetStmt) *ccms.Res
 
 	projectID, err := cat.ProjectID(db, set.Project)
 	if err != nil {
-		return cmderr("checking if project exists: " + err.Error())
+		return cmderr(err.Error())
 	}
 	if projectID == 0 {
 		return cmderr("project \"" + set.Project + "\" does not exist")
@@ -32,14 +32,14 @@ func dropSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DropSetStmt) *ccms.Res
 
 	setExists, err := cat.SetExists(db, set)
 	if err != nil {
-		return cmderr("checking if set exists: " + err.Error())
+		return cmderr(err.Error())
 	}
 	if !setExists {
 		return cmderr("set \"" + cmd.Set + "\" does not exist")
 	}
 
 	if err := cat.DropSet(db, set); err != nil {
-		return cmderr("dropping set: " + err.Error())
+		return cmderr(err.Error())
 	}
 
 	return ccms.NewResult("drop set")

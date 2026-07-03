@@ -1,0 +1,31 @@
+==== drop fund
+
+Remove a fund
+
+[source,subs="verbatim,quotes"]
+----
+drop fund `*_fund_name_*`
+----
+
+[discrete]
+===== Description
+
+The `drop fund` command removes a fund from the system.
+
+[discrete]
+===== Parameters
+
+[frame=none,grid=none,cols="1,2"]
+|===
+|`*_fund_name_*`
+|The name of the fund.
+|===
+
+[discrete]
+===== Examples
+
+Remove a fund `f`:
+
+----
+drop fund f;
+----
