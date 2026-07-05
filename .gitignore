@@ -3,9 +3,5 @@ cmd/ccd/parser/y.output
 bin
 *~
 
-doc/ccms.html
-doc/reference.html
-doc/serveradmin.html
-
-doc/insert.html
+doc/*.html
 
