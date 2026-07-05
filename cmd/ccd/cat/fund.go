@@ -89,9 +89,7 @@ func IsValidFundName(fund string) bool {
 
 func FundProperties(db *dbx.DB, fund string) ([][2]string, error) {
 	var title string
-	sql := `select coalesce(f.title, '') title
-       from ccms.fund f
-       where f.name=$1`
+	sql := `select f.title from ccms.fund f where f.name=$1`
 	err := db.QueryRow(db.Ctx, sql, fund).Scan(&title)
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
@@ -121,7 +119,7 @@ func AlterFundSetProperty(db *dbx.DB, fund, property, value string, stringLitera
 		return errors.New("property \"" + property + "\" does not exist")
 	}
 
-	sql := "update ccms.fund set \"" + property + "\"=nullif($1, '') where name=$2"
+	sql := "update ccms.fund set \"" + property + "\"=$1 where name=$2"
 	if _, err := db.Exec(db.Ctx, sql, value, fund); err != nil {
 		return dberr.Error(err)
 	}

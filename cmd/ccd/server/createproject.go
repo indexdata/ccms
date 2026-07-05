@@ -8,21 +8,8 @@ import (
 )
 
 func createProjectStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.CreateProjectStmt) *ccms.Result {
-	projectID, err := cat.ProjectID(db, cmd.Project)
-	if err != nil {
-		return cmderr("checking if project exists: " + err.Error())
-	}
-	if projectID != 0 {
-		return cmderr("project \"" + cmd.Project + "\" already exists")
-	}
-
-	if !cat.IsValidTargetProject(cmd.Project) {
-		return cmderr("invalid project name \"" + cmd.Project + "\"")
-	}
-
 	if err := cat.CreateProject(db, cmd.Project); err != nil {
 		return cmderr(err.Error())
 	}
-
 	return ccms.NewResult("create project")
 }

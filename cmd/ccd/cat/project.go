@@ -110,6 +110,18 @@ func archivalProjectName(project string) string {
 }
 
 func CreateProject(db *dbx.DB, project string) error {
+	if !IsValidTargetProject(project) {
+		return errors.New("invalid project name \"" + project + "\"")
+	}
+
+	projectID, err := ProjectID(db, project)
+	if err != nil {
+		return err
+	}
+	if projectID != 0 {
+		return errors.New("project \"" + project + "\" already exists")
+	}
+
 	sql := "create schema " + project
 	if _, err := db.Exec(db.Ctx, sql); err != nil {
 		return dberr.Error(err)
@@ -371,7 +383,7 @@ func alterProjectDropFund(db *dbx.DB, project, fund string, projectID int32) err
 
 func alterProjectAddOrigin(db *dbx.DB, project, origin string, projectID int32) error {
 	// look up origin id
-	originID, err := OriginID(db, origin)
+	originID, err := LocationID(db, origin)
 	if err != nil {
 		return err
 	}
@@ -403,7 +415,7 @@ func alterProjectDropOrigin(db *dbx.DB, project, origin string, projectID int32)
 		return nil
 	}
 	// look up origin id
-	originID, err := OriginID(db, origin)
+	originID, err := LocationID(db, origin)
 	if err != nil {
 		return err
 	}
@@ -427,16 +439,16 @@ func alterProjectDropOrigin(db *dbx.DB, project, origin string, projectID int32)
 }
 
 func alterProjectAddDestination(db *dbx.DB, project, destination string, projectID int32) error {
-	// look up destination id
-	destinationID, err := DestinationID(db, destination)
+	// look up location id
+	locationID, err := LocationID(db, destination)
 	if err != nil {
 		return err
 	}
-	if destinationID == 0 {
-		return errors.New("destination \"" + destination + "\" does not exist")
+	if locationID == 0 {
+		return errors.New("location \"" + destination + "\" does not exist")
 	}
 	// check if project destination exists
-	projectDestinationExists, err := projectDestinationExists(db, projectID, destinationID)
+	projectDestinationExists, err := projectDestinationExists(db, projectID, locationID)
 	if err != nil {
 		return err
 	}
@@ -444,8 +456,8 @@ func alterProjectAddDestination(db *dbx.DB, project, destination string, project
 		return nil
 	}
 	// add project destination
-	sql := "insert into ccms.project_destination (project_id, destination_id) values ($1, $2)"
-	if _, err := db.Exec(db.Ctx, sql, projectID, destinationID); err != nil {
+	sql := "insert into ccms.project_destination (project_id, location_id) values ($1, $2)"
+	if _, err := db.Exec(db.Ctx, sql, projectID, locationID); err != nil {
 		return dberr.Error(err)
 	}
 	return nil
@@ -460,7 +472,7 @@ func alterProjectDropDestination(db *dbx.DB, project, destination string, projec
 		return nil
 	}
 	// look up destination id
-	destinationID, err := DestinationID(db, destination)
+	destinationID, err := LocationID(db, destination)
 	if err != nil {
 		return err
 	}
@@ -476,7 +488,7 @@ func alterProjectDropDestination(db *dbx.DB, project, destination string, projec
 		return errors.New("project \"" + project + "\" does not have destination \"" + destination + "\"")
 	}
 	// drop project destination
-	sql := "delete from ccms.project_destination where project_id=$1 and destination_id=$2"
+	sql := "delete from ccms.project_destination where project_id=$1 and location_id=$2"
 	if _, err := db.Exec(db.Ctx, sql, projectID, destinationID); err != nil {
 		return dberr.Error(err)
 	}
@@ -556,34 +568,34 @@ func LocationID(db *dbx.DB, location string) (int32, error) {
 }
 
 // returns origin ID, or 0 if origin does not exist
-func OriginID(db *dbx.DB, origin string) (int32, error) {
-	var sql = "select id from ccms.origin where name=$1"
-	var id int32
-	err := db.QueryRow(db.Ctx, sql, origin).Scan(&id)
-	switch {
-	case errors.Is(err, pgx.ErrNoRows):
-		return 0, nil
-	case err != nil:
-		return 0, dberr.Error(err)
-	default:
-		return id, nil
-	}
-}
+// func OriginID(db *dbx.DB, origin string) (int32, error) {
+// 	var sql = "select id from ccms.origin where name=$1"
+// 	var id int32
+// 	err := db.QueryRow(db.Ctx, sql, origin).Scan(&id)
+// 	switch {
+// 	case errors.Is(err, pgx.ErrNoRows):
+// 		return 0, nil
+// 	case err != nil:
+// 		return 0, dberr.Error(err)
+// 	default:
+// 		return id, nil
+// 	}
+// }
 
 // returns destination ID, or 0 if destination does not exist
-func DestinationID(db *dbx.DB, destination string) (int32, error) {
-	sql := "select id from ccms.destination where name=$1"
-	var id int32
-	err := db.QueryRow(db.Ctx, sql, destination).Scan(&id)
-	switch {
-	case errors.Is(err, pgx.ErrNoRows):
-		return 0, nil
-	case err != nil:
-		return 0, dberr.Error(err)
-	default:
-		return id, nil
-	}
-}
+// func DestinationID(db *dbx.DB, destination string) (int32, error) {
+// 	sql := "select id from ccms.destination where name=$1"
+// 	var id int32
+// 	err := db.QueryRow(db.Ctx, sql, destination).Scan(&id)
+// 	switch {
+// 	case errors.Is(err, pgx.ErrNoRows):
+// 		return 0, nil
+// 	case err != nil:
+// 		return 0, dberr.Error(err)
+// 	default:
+// 		return id, nil
+// 	}
+// }
 
 // returns track ID, or 0 if track does not exist
 func TrackID(db *dbx.DB, track string) (int32, error) {
@@ -670,7 +682,7 @@ func projectOriginExists(db *dbx.DB, projectID, originID int32) (bool, error) {
 }
 
 func projectDestinationExists(db *dbx.DB, projectID, destinationID int32) (bool, error) {
-	sql := "select 1 from ccms.project_destination where project_id=$1 and destination_id=$2"
+	sql := "select 1 from ccms.project_destination where project_id=$1 and location_id=$2"
 	var n int32
 	err := db.QueryRow(db.Ctx, sql, projectID, destinationID).Scan(&n)
 	switch {
@@ -722,7 +734,7 @@ func AlterProjectSetProperty(db *dbx.DB, project, property, value string, string
 		}
 	}
 
-	sql := "update ccms.project set \"" + property + "\"=nullif($1, '') where name=$2"
+	sql := "update ccms.project set \"" + property + "\"=$1 where name=$2"
 	if _, err := db.Exec(db.Ctx, sql, value, project); err != nil {
 		return errors.New("updating project: " + dberr.String(err))
 	}
@@ -752,7 +764,7 @@ org as (
            coalesce(string_agg(l.name||':'||l.title, '|' order by l.name), '') origins
         from ccms.project p
             join ccms.project_origin pl on p.id=pl.project_id
-            join ccms.origin l on pl.origin_id=l.id
+            join ccms.location l on pl.location_id=l.id
         group by p.id
 ),
 dst as (
@@ -760,7 +772,7 @@ dst as (
            coalesce(string_agg(l.name||':'||l.title, '|' order by l.name), '') destinations
         from ccms.project p
             join ccms.project_destination pl on p.id=pl.project_id
-            join ccms.destination l on pl.destination_id=l.id
+            join ccms.location l on pl.location_id=l.id
         group by p.id
 ),
 trk as (
@@ -771,9 +783,9 @@ trk as (
             join ccms.track t on pl.track_id=t.id
         group by p.id
 )
-select coalesce(p.title, '') title,
-       coalesce(p.action, '') action,
-       coalesce(p.mou_link, '') mou_link,
+select p.title,
+       p.action,
+       p.mou_link,
        coalesce(fnd.funds, '') funds,
        coalesce(org.origins, '') origins,
        coalesce(dst.destinations, '') destinations,
