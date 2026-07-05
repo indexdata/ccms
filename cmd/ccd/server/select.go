@@ -36,9 +36,6 @@ func selectStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.SelectStmt) *ccms.Resul
 	}
 
 	from := cmd.Query.(*ast.QueryClause).From
-	if from == "reserve" { // TODO remove this "reserve" check after some time
-		return cmderr("set \"reserve\" is no longer supported; use \"<project>.object\"")
-	}
 	fromSet := set.Parse(from)
 	projectID, err := cat.ProjectID(db, fromSet.Project)
 	if err != nil {

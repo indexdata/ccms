@@ -11,7 +11,8 @@ insert into target_set_name
 Description
 
 The insert command selects objects from a source set according to specified
-criteria, and inserts the selected objects into a target set.
+criteria, and inserts the selected objects into a target set. The source and
+target sets must be in the same project.
 
 Parameters
 

@@ -47,10 +47,10 @@ func insertStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.InsertStmt) *ccms.Resul
 	}
 
 	from := cmd.Query.(*ast.QueryClause).From
-	if from == "reserve" { // TODO remove this "reserve" check after some time
-		return cmderr("set \"reserve\" is no longer supported; use \"<project>.object\"")
-	}
 	fromSet := set.Parse(from)
+	if intoSet.Project != fromSet.Project {
+		return cmderr("sets \"" + intoSet.String() + "\" and \"" + fromSet.String() + "\" are in different projects")
+	}
 	fromSetExists, err := cat.SetExists(db, fromSet)
 	if err != nil {
 		return cmderr("checking if set exists: " + err.Error())

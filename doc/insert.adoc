@@ -16,7 +16,7 @@ insert into `*_target_set_name_*`
 
 The `insert` command selects objects from a source set according to
 specified criteria, and inserts the selected objects into a
-target set.
+target set.  The source and target sets must be in the same project.
 
 [discrete]
 ===== Parameters
