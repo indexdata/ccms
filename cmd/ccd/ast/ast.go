@@ -33,7 +33,6 @@ type AlterProjectStmt struct {
 func (*AlterProjectStmt) node() {}
 
 type ArchiveProjectStmt struct {
-	Project string
 }
 
 func (*ArchiveProjectStmt) node() {}
@@ -128,10 +127,9 @@ type SelectVersionStmt struct {
 func (*SelectVersionStmt) node() {}
 
 type ShowStmt struct {
-	Type     string
-	Name     string
-	In       string
-	Archived bool
+	Type string
+	Name string
+	In   string
 }
 
 func (*ShowStmt) node() {}

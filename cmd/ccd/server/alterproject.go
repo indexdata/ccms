@@ -15,9 +15,6 @@ func alterProjectStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.AlterProjectStmt)
 	if projectID == 0 {
 		return cmderr("project \"" + cmd.Project + "\" does not exist")
 	}
-	if projectID == -1 {
-		return cmderr("project \"" + cmd.Project + "\" is archived")
-	}
 
 	switch cmd.Action {
 	case ast.Set:

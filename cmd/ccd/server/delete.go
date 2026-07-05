@@ -27,9 +27,6 @@ func deleteStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DeleteStmt) *ccms.Resul
 	if projectID == 0 {
 		return cmderr("project \"" + fromSet.Project + "\" does not exist")
 	}
-	if projectID == -1 {
-		return cmderr("project \"" + fromSet.Project + "\" is archived")
-	}
 
 	setExists, err := cat.SetExists(db, fromSet)
 	if err != nil {

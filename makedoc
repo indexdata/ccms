@@ -2,7 +2,6 @@
 asciidoctor -a docinfo=shared ./doc/*.adoc
 w3m ./doc/alterfund.html | head -n -1 > ./cmd/ccd/doc/alterfund.txt
 w3m ./doc/alterproject.html | head -n -1 > ./cmd/ccd/doc/alterproject.txt
-w3m ./doc/archiveproject.html | head -n -1 > ./cmd/ccd/doc/archiveproject.txt
 w3m ./doc/createfilter.html | head -n -1 > ./cmd/ccd/doc/createfilter.txt
 w3m ./doc/createfund.html | head -n -1 > ./cmd/ccd/doc/createfund.txt
 w3m ./doc/createproject.html | head -n -1 > ./cmd/ccd/doc/createproject.txt

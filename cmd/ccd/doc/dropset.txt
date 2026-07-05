@@ -8,6 +8,8 @@ Description
 
 The drop set command removes a set from the system.
 
+Warning drop set removes a set permanently. The operation cannot be undone.
+
 Parameters
 
 set_name The name of the set.

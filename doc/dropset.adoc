@@ -12,6 +12,9 @@ drop set `*_set_name_*`
 
 The `drop set` command removes a set from the system.
 
+WARNING: `drop set` removes a set permanently.  The operation cannot
+be undone.
+
 [discrete]
 ===== Parameters
 

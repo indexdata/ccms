@@ -26,9 +26,6 @@ func dropSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DropSetStmt) *ccms.Res
 	if projectID == 0 {
 		return cmderr("project \"" + set.Project + "\" does not exist")
 	}
-	if projectID == -1 {
-		return cmderr("project \"" + set.Project + "\" is archived")
-	}
 
 	setExists, err := cat.SetExists(db, set)
 	if err != nil {

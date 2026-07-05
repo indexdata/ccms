@@ -10,7 +10,7 @@ show funds
 
 show project project_name
 
-show projects [ archived ]
+show projects
 
 show sets [ in project project_name ]
 

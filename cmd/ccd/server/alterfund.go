@@ -15,9 +15,6 @@ func alterFundStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.AlterFundStmt) *ccms
 	if fundID == 0 {
 		return cmderr("fund \"" + cmd.Fund + "\" does not exist")
 	}
-	if fundID == -1 {
-		return cmderr("fund \"" + cmd.Fund + "\" is archived")
-	}
 
 	switch cmd.Action {
 	case ast.Set:

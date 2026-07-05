@@ -1,6 +1,6 @@
 ==== drop project
 
-Remove an archived project
+Remove a project
 
 [source,subs="verbatim,quotes"]
 ----
@@ -10,9 +10,12 @@ drop project `*_project_name_*`
 [discrete]
 ===== Description
 
-The `drop project` command removes an archived project from the
-system.  This automatically drops the `object` table and deletes all
-of its data.  All associated project properties are also removed.
+The `drop project` command removes a project from the system.  This
+automatically drops the `object` table and deletes all of its data.
+All associated project properties are also removed.
+
+WARNING: `drop project` removes a project permanently.  The operation
+cannot be undone.
 
 [discrete]
 ===== Parameters
@@ -26,8 +29,8 @@ of its data.  All associated project properties are also removed.
 [discrete]
 ===== Examples
 
-Remove an archived project `myproj_20260610_103412`:
+Remove a project `myproj`:
 
 ----
-drop project myproj_20260610_103412;
+drop project myproj;
 ----

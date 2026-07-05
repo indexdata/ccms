@@ -6,8 +6,6 @@ include::alterfund.adoc[]
 
 include::alterproject.adoc[]
 
-include::archiveproject.adoc[]
-
 include::createfilter.adoc[]
 
 include::createfund.adoc[]
@@ -21,6 +19,8 @@ include::createuser.adoc[]
 include::delete.adoc[]
 
 include::dropfund.adoc[]
+
+include::dropproject.adoc[]
 
 include::dropset.adoc[]
 

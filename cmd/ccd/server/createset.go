@@ -34,9 +34,6 @@ func createSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.CreateSetStmt) *ccms
 	if projectID == 0 {
 		return cmderr("project \"" + set.Project + "\" does not exist")
 	}
-	if projectID == -1 {
-		return cmderr("project \"" + set.Project + "\" is archived")
-	}
 
 	if err := cat.CreateSet(db, set); err != nil {
 		return cmderr("writing set: " + err.Error())

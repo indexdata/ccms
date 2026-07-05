@@ -44,7 +44,7 @@ func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
 	case "projects":
 		result.AddField("name", "text")
 		result.AddField("title", "text")
-		err := addShowProjectsData(db, result, cmd.Archived)
+		err := addShowProjectsData(db, result)
 		if err != nil {
 			return cmderr(err.Error())
 		}
@@ -124,8 +124,8 @@ func addShowProjectData(db *dbx.DB, result *ccms.Result, project string) error {
 	return nil
 }
 
-func addShowProjectsData(db *dbx.DB, result *ccms.Result, archived bool) error {
-	projects, err := cat.Projects(db, archived)
+func addShowProjectsData(db *dbx.DB, result *ccms.Result) error {
+	projects, err := cat.Projects(db)
 	if err != nil {
 		return err
 	}

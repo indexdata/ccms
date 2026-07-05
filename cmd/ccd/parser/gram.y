@@ -225,7 +225,7 @@ basic_stmt:
 archive_project_stmt:
 	ARCHIVE PROJECT name ';'
 		{
-			$$ = &ast.ArchiveProjectStmt{Project: $3}
+			$$ = &ast.ArchiveProjectStmt{}
 		}
 
 alter_fund_stmt:
@@ -366,10 +366,6 @@ show_stmt:
 	| SHOW PROJECTS ';'
 		{
 			$$ = &ast.ShowStmt{Type: "projects"}
-		}
-	| SHOW PROJECTS ARCHIVED ';'
-		{
-			$$ = &ast.ShowStmt{Type: "projects", Archived: true}
 		}
 
 update_stmt:

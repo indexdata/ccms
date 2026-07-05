@@ -15,7 +15,6 @@ func infoStmt(s *svr, db *dbx.DB, cmd *ast.InfoStmt) *ccms.Result {
 			"SQL commands:\n" +
 			"        alter fund       change the definition of a fund\n" +
 			"        alter project    change the definition of a project\n" +
-			"        archive project  archive a project\n" +
 			"        create filter    define a new filter\n" +
 			"        create fund      define a new fund\n" +
 			"        create project   define a new project\n" +
@@ -23,7 +22,7 @@ func infoStmt(s *svr, db *dbx.DB, cmd *ast.InfoStmt) *ccms.Result {
 			"        create user      define a new user\n" +
 			"        delete           remove objects from set membership\n" +
 			"        drop fund        remove a fund\n" +
-			// "        drop project     drop an archived project\n" +
+			"        drop project     remove a project\n" +
 			"        drop set         remove a set\n" +
 			//"        info    show supported commands\n" +
 			"        insert           insert objects into a set\n" +
@@ -39,8 +38,6 @@ func infoStmt(s *svr, db *dbx.DB, cmd *ast.InfoStmt) *ccms.Result {
 		docstr = doc.AlterFund()
 	case "alter project":
 		docstr = doc.AlterProject()
-	case "archive project":
-		docstr = doc.ArchiveProject()
 	case "create filter":
 		docstr = doc.CreateFilter()
 	case "create fund":
@@ -55,8 +52,8 @@ func infoStmt(s *svr, db *dbx.DB, cmd *ast.InfoStmt) *ccms.Result {
 		docstr = doc.Delete()
 	case "drop fund":
 		docstr = doc.DropFund()
-	// case "drop project":
-	// 	docstr = doc.DropProject()
+	case "drop project":
+		docstr = doc.DropProject()
 	case "drop set":
 		docstr = doc.DropSet()
 	//case "info":

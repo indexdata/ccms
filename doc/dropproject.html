@@ -460,7 +460,7 @@ h1, h2, h3, h4, h5, h6, #toctitle,
 <div class="sect3">
 <h4 id="_drop_project">drop project</h4>
 <div class="paragraph">
-<p>Remove an archived project</p>
+<p>Remove a project</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -469,9 +469,22 @@ h1, h2, h3, h4, h5, h6, #toctitle,
 </div>
 <h5 id="_description" class="discrete">Description</h5>
 <div class="paragraph">
-<p>The <code>drop project</code> command removes an archived project from the
-system.  This automatically drops the <code>object</code> table and deletes all
-of its data.  All associated project properties are also removed.</p>
+<p>The <code>drop project</code> command removes a project from the system.  This
+automatically drops the <code>object</code> table and deletes all of its data.
+All associated project properties are also removed.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+<code>drop project</code> removes a project permanently.  The operation
+cannot be undone.
+</td>
+</tr>
+</table>
 </div>
 <h5 id="_parameters" class="discrete">Parameters</h5>
 <table class="tableblock frame-none grid-none stretch">
@@ -488,18 +501,18 @@ of its data.  All associated project properties are also removed.</p>
 </table>
 <h5 id="_examples" class="discrete">Examples</h5>
 <div class="paragraph">
-<p>Remove an archived project <code>myproj_20260610_103412</code>:</p>
+<p>Remove a project <code>myproj</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>drop project myproj_20260610_103412;</pre>
+<pre>drop project myproj;</pre>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-06-10 10:34:25 -0400
+Last updated 2026-07-05 14:16:25 -0400
 </div>
 </div>
 </body>

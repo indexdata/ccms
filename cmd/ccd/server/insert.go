@@ -34,9 +34,6 @@ func insertStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.InsertStmt) *ccms.Resul
 	if projectID == 0 {
 		return cmderr("project \"" + intoSet.Project + "\" does not exist")
 	}
-	if projectID == -1 {
-		return cmderr("project \"" + intoSet.Project + "\" is archived")
-	}
 
 	intoSetExists, err := cat.SetExists(db, intoSet)
 	if err != nil {

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 	"unicode"
 
 	"github.com/indexdata/ccms/cmd/ccd/dberr"
@@ -13,28 +12,9 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// returns project ID, or -1 if the project is archived or 0 if it does not exist
+// returns project ID, or 0 if it does not exist
 func ProjectID(db *dbx.DB, project string) (int32, error) {
-	sql := "select id, archived from ccms.project where name=$1"
-	var id int32
-	var archived bool
-	err := db.QueryRow(db.Ctx, sql, project).Scan(&id, &archived)
-	switch {
-	case errors.Is(err, pgx.ErrNoRows):
-		return 0, nil
-	case err != nil:
-		return 0, err
-	default:
-		if archived {
-			return -1, nil
-		}
-		return id, nil
-	}
-}
-
-// returns project ID, or 0 if project does not exist
-func ArchivedProjectID(db *dbx.DB, project string) (int32, error) {
-	sql := "select id from ccms.project where name=$1 and archived=true"
+	sql := "select id from ccms.project where name=$1"
 	var id int32
 	err := db.QueryRow(db.Ctx, sql, project).Scan(&id)
 	switch {
@@ -47,6 +27,21 @@ func ArchivedProjectID(db *dbx.DB, project string) (int32, error) {
 	}
 }
 
+// returns project ID, or 0 if project does not exist
+// func ArchivedProjectID(db *dbx.DB, project string) (int32, error) {
+// 	sql := "select id from ccms.project where name=$1 and archived=true"
+// 	var id int32
+// 	err := db.QueryRow(db.Ctx, sql, project).Scan(&id)
+// 	switch {
+// 	case errors.Is(err, pgx.ErrNoRows):
+// 		return 0, nil
+// 	case err != nil:
+// 		return 0, err
+// 	default:
+// 		return id, nil
+// 	}
+// }
+
 func IsValidTargetProject(project string) bool {
 	if strings.ContainsRune(project, '.') {
 		return false
@@ -54,9 +49,9 @@ func IsValidTargetProject(project string) bool {
 	return true
 }
 
-func Projects(db *dbx.DB, archived bool) (prop.Property, error) {
-	sql := "select name, title from ccms.project where archived=$1"
-	rows, err := db.Query(db.Ctx, sql, archived)
+func Projects(db *dbx.DB) (prop.Property, error) {
+	sql := "select name, title from ccms.project"
+	rows, err := db.Query(db.Ctx, sql)
 	if err != nil {
 		return nil, dberr.Error(err)
 	}
@@ -68,12 +63,24 @@ func Projects(db *dbx.DB, archived bool) (prop.Property, error) {
 }
 
 func DropProject(db *dbx.DB, project string) error {
+	if !IsValidTargetProject(project) {
+		return errors.New("invalid target project \"" + project + "\"")
+	}
+
+	projectID, err := ProjectID(db, project)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+	if projectID == 0 {
+		return errors.New("project \"" + project + "\" does not exist")
+	}
+
 	sets, err := SetsInProject(db, project)
 	if err != nil {
 		return err
 	}
-	if len(sets) != 0 {
-		return errors.New("project \"" + project + "\" contains one or more sets")
+	if len(sets) > 1 {
+		return errors.New("project \"" + project + "\" contains previously created sets")
 	}
 
 	sql := "drop table " + project + ".object"
@@ -91,23 +98,23 @@ func DropProject(db *dbx.DB, project string) error {
 	return nil
 }
 
-func ArchiveProject(db *dbx.DB, project string) (string, error) {
-	newName := archivalProjectName(project)
-	sql := "update ccms.project set name='" + newName + "', archived=true where name='" + project + "'"
-	if _, err := db.Exec(db.Ctx, sql); err != nil {
-		return "", dberr.Error(err)
-	}
-	sql = "alter schema " + project + " rename to " + newName
-	if _, err := db.Exec(db.Ctx, sql); err != nil {
-		return "", dberr.Error(err)
-	}
-	return newName, nil
-}
+// func ArchiveProject(db *dbx.DB, project string) (string, error) {
+// 	newName := archivalProjectName(project)
+// 	sql := "update ccms.project set name='" + newName + "', archived=true where name='" + project + "'"
+// 	if _, err := db.Exec(db.Ctx, sql); err != nil {
+// 		return "", dberr.Error(err)
+// 	}
+// 	sql = "alter schema " + project + " rename to " + newName
+// 	if _, err := db.Exec(db.Ctx, sql); err != nil {
+// 		return "", dberr.Error(err)
+// 	}
+// 	return newName, nil
+// }
 
-func archivalProjectName(project string) string {
-	t := time.Now().UTC()
-	return t.Format(project + "_20060102_150405")
-}
+// func archivalProjectName(project string) string {
+// 	t := time.Now().UTC()
+// 	return t.Format(project + "_20060102_150405")
+// }
 
 func CreateProject(db *dbx.DB, project string) error {
 	if !IsValidTargetProject(project) {

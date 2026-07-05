@@ -57,7 +57,7 @@ func SetTable(set set.Set) string {
 }
 
 func Sets(db *dbx.DB) ([]string, error) {
-	sql := "select p.name||'.'||s.name from ccms.sets s join ccms.project p on s.project_id=p.id where not p.archived"
+	sql := "select p.name||'.'||s.name from ccms.sets s join ccms.project p on s.project_id=p.id"
 	rows, err := db.Query(db.Ctx, sql)
 	if err != nil {
 		return nil, dberr.Error(err)
@@ -68,7 +68,7 @@ func Sets(db *dbx.DB) ([]string, error) {
 	}
 
 	// add object sets
-	projects, err := Projects(db, false)
+	projects, err := Projects(db)
 	if err != nil {
 		return nil, err
 	}

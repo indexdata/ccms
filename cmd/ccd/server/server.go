@@ -245,7 +245,8 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 		case *ast.AlterProjectStmt:
 			result = alterProjectStmt(s, dbtx, rqid, cmd)
 		case *ast.ArchiveProjectStmt:
-			result = archiveProjectStmt(s, dbtx, rqid, cmd)
+			result = cmderr("\"archive project\" is no longer supported; use \"drop project\"")
+
 		case *ast.CreateFilterStmt:
 			result = createFilterStmt(s, dbtx, rqid, cmd)
 		case *ast.CreateFundStmt:
@@ -260,8 +261,8 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 			result = deleteStmt(s, dbtx, rqid, cmd)
 		case *ast.DropFundStmt:
 			result = dropFundStmt(s, dbtx, rqid, cmd)
-		// case *ast.DropProjectStmt:
-		// 	result = dropProjectStmt(s,d, rqid, cmd)
+		case *ast.DropProjectStmt:
+			result = dropProjectStmt(s, dbtx, rqid, cmd)
 		case *ast.DropSetStmt:
 			result = dropSetStmt(s, dbtx, rqid, cmd)
 		case *ast.InfoStmt:

@@ -19,13 +19,6 @@ func AlterProject() string {
 	return strings.TrimSpace(alterProjectTxt)
 }
 
-//go:embed archiveproject.txt
-var archiveProjectTxt string
-
-func ArchiveProject() string {
-	return strings.TrimSpace(archiveProjectTxt)
-}
-
 //go:embed createfilter.txt
 var createFilterTxt string
 

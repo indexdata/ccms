@@ -27,9 +27,6 @@ func updateStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.UpdateStmt) *ccms.Resul
 	if projectID == 0 {
 		return cmderr("project \"" + set.Project + "\" does not exist")
 	}
-	if projectID == -1 {
-		return cmderr("project \"" + set.Project + "\" is archived")
-	}
 
 	if cmd.IDAttr != "id" {
 		return cmderr("attribute \"" + cmd.IDAttr + "\" is not valid with update")
