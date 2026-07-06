@@ -114,7 +114,7 @@ func run() {
 		},
 	}
 	rootCmd.SetHelpFunc(help)
-	// redefine help without -h, so we can use it for --port
+	// redefine help without -h, so we can use it for host
 	var helpFlag bool
 	rootCmd.PersistentFlags().BoolVarP(&helpFlag, "help", "", false, "Help for ccc")
 	_ = hostFlag(rootCmd, &option.Host)
@@ -250,6 +250,10 @@ func runClient() error {
 		l := strings.Join(fields, "")
 		if l == "quit" || l == "quit;" || l == "exit" || l == "exit;" {
 			break
+		}
+		if line[len(line)-1] != ';' {
+			eout.Error(errorPrefix + " missing semicolon")
+			continue
 		}
 		startTime := time.Now()
 		resp, err := client.Send(line)

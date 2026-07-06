@@ -133,9 +133,13 @@ stmt_list:
 		{
 			$$ = $1
 		}
-	| stmt_list stmt
+	| stmt_list ';'
 		{
-			$$ = append($1, $2...)
+			$$ = $1
+		}
+	| stmt_list ';' stmt
+		{
+			$$ = append($1, $3...)
 		}
 
 stmt:
@@ -217,171 +221,167 @@ basic_stmt:
 		{
 			$$ = $1
 		}
-	| ';'
-		{
-			$$ = nil
-		}
 
 archive_project_stmt:
-	ARCHIVE PROJECT name ';'
+	ARCHIVE PROJECT name
 		{
 			$$ = &ast.ArchiveProjectStmt{}
 		}
 
 alter_fund_stmt:
-	ALTER FUND name ALTER PROPERTY name SET name ';'
+	ALTER FUND name ALTER PROPERTY name SET name
 		{
 			$$ = &ast.AlterFundStmt{Fund: $3, Property: $6, Action: ast.Set, Value: $8, StringLiteral: false}
 		}
-	| ALTER FUND name ALTER PROPERTY name SET SLITERAL ';'
+	| ALTER FUND name ALTER PROPERTY name SET SLITERAL
 		{
 			$$ = &ast.AlterFundStmt{Fund: $3, Property: $6, Action: ast.Set, Value: ast.DecodeSLiteral($8), StringLiteral: true}
 		}
 
 alter_project_stmt:
-	ALTER PROJECT name ALTER PROPERTY name SET name ';'
+	ALTER PROJECT name ALTER PROPERTY name SET name
 		{
 			$$ = &ast.AlterProjectStmt{Project: $3, Property: $6, Action: ast.Set, Value: $8, StringLiteral: false}
 		}
-	| ALTER PROJECT name ALTER PROPERTY name SET SLITERAL ';'
+	| ALTER PROJECT name ALTER PROPERTY name SET SLITERAL
 		{
 			$$ = &ast.AlterProjectStmt{Project: $3, Property: $6, Action: ast.Set, Value: ast.DecodeSLiteral($8), StringLiteral: true}
 		}
-	| ALTER PROJECT name ALTER PROPERTY name ADD name ';'
+	| ALTER PROJECT name ALTER PROPERTY name ADD name
 		{
 			$$ = &ast.AlterProjectStmt{Project: $3, Property: $6, Action: ast.Add, Value: $8}
 		}
-	| ALTER PROJECT name ALTER PROPERTY name DROP name ';'
+	| ALTER PROJECT name ALTER PROPERTY name DROP name
 		{
 			$$ = &ast.AlterProjectStmt{Project: $3, Property: $6, Action: ast.Drop, Value: $8}
 		}
-	| ALTER PROJECT name ALTER PROPERTY name DROP ALL ';'
+	| ALTER PROJECT name ALTER PROPERTY name DROP ALL
 		{
 			$$ = &ast.AlterProjectStmt{Project: $3, Property: $6, Action: ast.Drop, Value: "*"}
 		}
 
 create_filter_stmt:
-	CREATE FILTER name where_clause ';'
+	CREATE FILTER name where_clause
 		{
 			$$ = &ast.CreateFilterStmt{Filter: $3, Where: $4}
 		}
 
 create_fund_stmt:
-	CREATE FUND name ';'
+	CREATE FUND name
 		{
 			$$ = &ast.CreateFundStmt{Fund: $3}
 		}
 
 create_project_stmt:
-	CREATE PROJECT name ';'
+	CREATE PROJECT name
 		{
 			$$ = &ast.CreateProjectStmt{Project: $3}
 		}
 
 create_set_stmt:
-	CREATE SET name ';'
+	CREATE SET name
 		{
 			$$ = &ast.CreateSetStmt{Set: $3}
 		}
 
 create_user_stmt:
-	CREATE USER name WITH ENCRYPTED PASSWORD SLITERAL ';'
+	CREATE USER name WITH ENCRYPTED PASSWORD SLITERAL
 		{
 			$$ = &ast.CreateUserStmt{User: $3, EncryptedPassword: ast.DecodeSLiteral($7)}
 		}
 
 delete_stmt:
-	DELETE FROM name where_clause ';'
+	DELETE FROM name where_clause
 		{
 			$$ = &ast.DeleteStmt{From: $3, Where: $4}
 		}
 
 drop_fund_stmt:
-	DROP FUND name ';'
+	DROP FUND name
 		{
 			$$ = &ast.DropFundStmt{Fund: $3}
 		}
 
 drop_project_stmt:
-	DROP PROJECT name ';'
+	DROP PROJECT name
 		{
 			$$ = &ast.DropProjectStmt{Project: $3}
 		}
 
 drop_set_stmt:
-	DROP SET name ';'
+	DROP SET name
 		{
 			$$ = &ast.DropSetStmt{Set: $3}
 		}
 
 info_stmt:
-	INFO ';'
+	INFO
 		{
 			$$ = &ast.InfoStmt{Topic: ""}
 		}
-	| INFO SLITERAL ';'
+	| INFO SLITERAL
 		{
 			$$ = &ast.InfoStmt{Topic: ast.DecodeSLiteral($2)}
 		}
 
 insert_stmt:
-	INSERT INTO name SELECT '*' query_clause ';'
+	INSERT INTO name SELECT '*' query_clause
 		{
 			$$ = &ast.InsertStmt{Into: $3, Query: $6}
 		}
 
 ping_stmt:
-	PING ';'
+	PING
 		{
 			$$ = &ast.PingStmt{}
 		}
 
 select_stmt:
-	SELECT select_attr_list query_clause ';'
+	SELECT select_attr_list query_clause
 		{
 			$$ = &ast.SelectStmt{AttrList: $2, Query: $3}
 		}
-	| SELECT VERSION '(' ')' ';'
+	| SELECT VERSION '(' ')'
 		{
 			$$ = &ast.SelectVersionStmt{}
 		}
 
 show_stmt:
-	SHOW name ';'
+	SHOW name
 		{
 			$$ = &ast.ShowStmt{Type: $2}
 		}
-	| SHOW name IN PROJECT name ';'
+	| SHOW name IN PROJECT name
 		{
 			$$ = &ast.ShowStmt{Type: $2, In: $5}
 		}
-	| SHOW FUND name ';'
+	| SHOW FUND name
 		{
 			$$ = &ast.ShowStmt{Type: "fund", Name: $3}
 		}
-	| SHOW PROJECT name ';'
+	| SHOW PROJECT name
 		{
 			$$ = &ast.ShowStmt{Type: "project", Name: $3}
 		}
-	| SHOW PROJECTS ';'
+	| SHOW PROJECTS
 		{
 			$$ = &ast.ShowStmt{Type: "projects"}
 		}
 
 update_stmt:
-	UPDATE name SET name '=' name WHERE name '=' NUMBER ';'
+	UPDATE name SET name '=' name WHERE name '=' NUMBER
 		{
 			$$ = &ast.UpdateStmt{Set: $2, Attr: $4, Value: $6, IDAttr: $8, IDValue: &ast.Number{Value: $10}}
 		}
-	| UPDATE name SET name '=' NULL WHERE name '=' NUMBER ';'
+	| UPDATE name SET name '=' NULL WHERE name '=' NUMBER
 		{
 			$$ = &ast.UpdateStmt{Set: $2, Attr: $4, ValueNull: true, IDAttr: $8, IDValue: &ast.Number{Value: $10}}
 		}
-	| UPDATE name SET FUND '=' name WHERE name '=' NUMBER ';'
+	| UPDATE name SET FUND '=' name WHERE name '=' NUMBER
 		{
 			$$ = &ast.UpdateStmt{Set: $2, Attr: "fund", Value: $6, IDAttr: $8, IDValue: &ast.Number{Value: $10}}
 		}
-	| UPDATE name SET FUND '=' NULL WHERE name '=' NUMBER ';'
+	| UPDATE name SET FUND '=' NULL WHERE name '=' NUMBER
 		{
 			$$ = &ast.UpdateStmt{Set: $2, Attr: "fund", ValueNull: true, IDAttr: $8, IDValue: &ast.Number{Value: $10}}
 		}
