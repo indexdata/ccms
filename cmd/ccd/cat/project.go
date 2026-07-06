@@ -80,7 +80,7 @@ func DropProject(db *dbx.DB, project string) error {
 		return err
 	}
 	if len(sets) > 1 {
-		return errors.New("project \"" + project + "\" contains previously created sets")
+		return errors.New("project \"" + project + "\" contains one or more user-defined sets")
 	}
 
 	sql := "drop table " + project + ".object"
