@@ -406,7 +406,7 @@ func alterProjectAddOrigin(db *dbx.DB, project, origin string, projectID int32) 
 		return nil
 	}
 	// add project origin
-	sql := "insert into ccms.project_origin (project_id, origin_id) values ($1, $2)"
+	sql := "insert into ccms.project_origin (project_id, location_id) values ($1, $2)"
 	if _, err := db.Exec(db.Ctx, sql, projectID, originID); err != nil {
 		return dberr.Error(err)
 	}
@@ -438,7 +438,7 @@ func alterProjectDropOrigin(db *dbx.DB, project, origin string, projectID int32)
 		return errors.New("project \"" + project + "\" does not have origin \"" + origin + "\"")
 	}
 	// drop project origin
-	sql := "delete from ccms.project_origin where project_id=$1 and origin_id=$2"
+	sql := "delete from ccms.project_origin where project_id=$1 and location_id=$2"
 	if _, err := db.Exec(db.Ctx, sql, projectID, originID); err != nil {
 		return dberr.Error(err)
 	}
@@ -675,7 +675,7 @@ func objectFundExists(db *dbx.DB, project string, fundID int32) (bool, error) {
 // }
 
 func projectOriginExists(db *dbx.DB, projectID, originID int32) (bool, error) {
-	sql := "select 1 from ccms.project_origin where project_id=$1 and origin_id=$2"
+	sql := "select 1 from ccms.project_origin where project_id=$1 and location_id=$2"
 	var n int32
 	err := db.QueryRow(db.Ctx, sql, projectID, originID).Scan(&n)
 	switch {
