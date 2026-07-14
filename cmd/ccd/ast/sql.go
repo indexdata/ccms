@@ -7,6 +7,7 @@ import (
 
 	"github.com/indexdata/ccms/cmd/ccd/cat"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
+	"github.com/indexdata/ccms/internal/global"
 	"github.com/indexdata/ccms/internal/set"
 )
 
@@ -337,10 +338,10 @@ func evalExpr(db *dbx.DB, a, b *strings.Builder, expr Node, root bool, state eva
 			return errors.New("invalid boolean expression")
 		}
 		a.WriteRune('\'')
-		a.WriteString(encodeString(e.Value))
+		a.WriteString(global.EncodeString(e.Value))
 		a.WriteRune('\'')
 		b.WriteRune('\'')
-		b.WriteString(encodeString(e.Value))
+		b.WriteString(global.EncodeString(e.Value))
 		b.WriteRune('\'')
 	case *Number:
 		if root {
@@ -420,15 +421,4 @@ func attrSQL(a, b *strings.Builder, attr string) {
 	default:
 		b.WriteString(attr)
 	}
-}
-
-func encodeString(s string) string {
-	var b strings.Builder
-	for _, r := range s {
-		if r == '\'' {
-			b.WriteRune('\'')
-		}
-		b.WriteRune(r)
-	}
-	return b.String()
 }

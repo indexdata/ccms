@@ -1,3 +1,5 @@
+# v0.0.28
+
 * Added commands `show fund`, `alter fund`, and `drop fund`.
 
 * Removed command `archive project`.
@@ -6,6 +8,8 @@
 
 * Added `create filter` and `show filters` commands and `filter()`
   operator.
+
+* Added experimental input validator `ccms.Validator`.
 
 # v0.0.27
 

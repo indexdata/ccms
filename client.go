@@ -11,6 +11,7 @@ import (
 	"iter"
 	"net"
 	"net/http"
+	"unicode"
 
 	"github.com/indexdata/ccms/internal/crypto"
 	"github.com/indexdata/ccms/internal/eout"
@@ -252,8 +253,20 @@ type jsonDataRow struct {
 	Values []any `json:"values"`
 }
 
+// send one or more commands to the server and return the response;
+// same as Send() but also accepts a Validator
+func (c *Client) SendValid(cmd string, validator Validator) (*Response, error) {
+	if validator.err != nil {
+		return nil, validator.err
+	}
+	return c.Send(cmd)
+}
+
 // send one or more commands to the server and return the response
 func (c *Client) Send(cmd string) (*Response, error) {
+	if !printable(cmd) {
+		return nil, errors.New("command \"" + cmd + "\" contains invalid characters")
+	}
 	var rq = &protocol.Request{Commands: cmd}
 	// send the request
 	var httprs *http.Response
@@ -436,4 +449,21 @@ func readResponseMap(httpResponse *http.Response) (map[string]interface{}, error
 		return nil, fmt.Errorf("decoding server response: %s", err)
 	}
 	return m, nil
+}
+
+func printable(s string) bool {
+	for _, r := range s {
+		switch r {
+		case '\n':
+			continue
+		case '\r':
+			continue
+		case '\t':
+			continue
+		}
+		if !unicode.IsPrint(r) {
+			return false
+		}
+	}
+	return true
 }
