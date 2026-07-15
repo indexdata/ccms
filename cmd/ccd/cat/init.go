@@ -132,27 +132,39 @@ func createTableAttr(tx pgx.Tx) error {
 		"author text," +
 		"title text," +
 		"full_vendor_name text," +
-		"availability text)"
+		"availability text," +
+		"holdings_count smallint not null)"
 		//"place_of_publication text)"
 	if _, err := tx.Exec(context.TODO(), q); err != nil {
 		return fmt.Errorf("creating table ccms.attr: %v", dberr.Error(err))
 	}
-	if err := createAttrIndex(tx, "author"); err != nil {
+	if err := createGinIndex(tx, "author"); err != nil {
 		return err
 	}
-	if err := createAttrIndex(tx, "title"); err != nil {
+	if err := createGinIndex(tx, "title"); err != nil {
 		return err
 	}
-	if err := createAttrIndex(tx, "full_vendor_name"); err != nil {
+	if err := createGinIndex(tx, "full_vendor_name"); err != nil {
 		return err
 	}
-	if err := createAttrIndex(tx, "availability"); err != nil {
+	if err := createGinIndex(tx, "availability"); err != nil {
+		return err
+	}
+	if err := createBtreeIndex(tx, "holdings_count"); err != nil {
 		return err
 	}
 	return nil
 }
 
-func createAttrIndex(tx pgx.Tx, column string) error {
+func createBtreeIndex(tx pgx.Tx, column string) error {
+	q := "create index on ccms.attr (" + column + ")"
+	if _, err := tx.Exec(context.TODO(), q); err != nil {
+		return fmt.Errorf("creating index on attribute %q: %v", column, dberr.Error(err))
+	}
+	return nil
+}
+
+func createGinIndex(tx pgx.Tx, column string) error {
 	q := "create index on ccms.attr using gin (" + column + " gin_trgm_ops)"
 	if _, err := tx.Exec(context.TODO(), q); err != nil {
 		return fmt.Errorf("creating index on attribute %q: %v", column, dberr.Error(err))

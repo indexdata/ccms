@@ -45,6 +45,17 @@ func Unmarshal(data []byte) (*MARCXML, error) {
 	return &marc, nil
 }
 
+func (m *MARCXML) LookupHoldingsCount() int16 {
+	var count int16
+	df := m.Datafields
+	for i := range df {
+		if df[i].Tag == "999" && df[i].Ind1 == "1" && df[i].Ind2 == "0" {
+			count++
+		}
+	}
+	return count
+}
+
 func (m *MARCXML) Lookup(tag, ind1, ind2, subfield string) string {
 	content := make([]string, 0)
 	cf := m.Controlfields

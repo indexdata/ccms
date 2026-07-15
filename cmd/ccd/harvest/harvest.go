@@ -127,7 +127,9 @@ func harvestLoop(connString string) {
 		fullVendorName := m.Lookup("999", "1", "3", "a")
 		availability := m.Lookup("999", "1", "3", "z")
 		//placePub := m.Lookup("260", "a")
-		//fmt.Printf("%s [%s] %s\t%s\n", dateStamp, identifier, author100a, title245)
+
+		holdingsCount := m.LookupHoldingsCount()
+
 		_ = m
 		//c++
 		//if c%10000 == 0 {
@@ -162,9 +164,9 @@ func harvestLoop(connString string) {
 		}
 
 		if id != 0 {
-			q = "insert into ccms.attr (id, author, title, full_vendor_name, availability) " +
-				"values ($1, $2, $3, $4, $5) on conflict do nothing"
-			if _, err = tx.Exec(ctx, q, id, author, title, fullVendorName, availability); err != nil {
+			q = "insert into ccms.attr (id, author, title, full_vendor_name, availability, holdings_count) " +
+				"values ($1, $2, $3, $4, $5, $6) on conflict do nothing"
+			if _, err = tx.Exec(ctx, q, id, author, title, fullVendorName, availability, holdingsCount); err != nil {
 				logError("writing to table attr: " + err.Error())
 				return
 			}

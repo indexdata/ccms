@@ -114,14 +114,16 @@ func runQuery(s *svr, db *dbx.DB, sql string) (*ccms.Result, error) {
 	result.AddField("title", "text")
 	result.AddField("full_vendor_name", "text")
 	result.AddField("availability", "text")
+	result.AddField("holdings_count", "smallint")
 	result.AddField("decision", "boolean")
 	result.AddField("fund", "text")
 	var count int
 	for rows.Next() {
 		var id int64
 		var author, title, full_vendor_name, availability, fund zeronull.Text
+		var holdingsCount int16
 		var decisionNull *bool
-		err = rows.Scan(&id, &author, &title, &full_vendor_name, &availability, &decisionNull, &fund)
+		err = rows.Scan(&id, &author, &title, &full_vendor_name, &availability, &holdingsCount, &decisionNull, &fund)
 		if err != nil {
 			return nil, errors.New(internalError + err.Error())
 		}
@@ -129,7 +131,7 @@ func runQuery(s *svr, db *dbx.DB, sql string) (*ccms.Result, error) {
 		if decisionNull != nil {
 			decision = *decisionNull
 		}
-		result.AddData([]any{id, author, title, full_vendor_name, availability, decision, fund})
+		result.AddData([]any{id, author, title, full_vendor_name, availability, holdingsCount, decision, fund})
 		count++
 		if count > 10000 {
 			return nil, errors.New("result set too large")

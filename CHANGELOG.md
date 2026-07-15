@@ -1,3 +1,7 @@
+# development
+
+* Added the attribute `holdings_count`.
+
 # v0.0.28
 
 * Added commands `show fund`, `alter fund`, and `drop fund`.

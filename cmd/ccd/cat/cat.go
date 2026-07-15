@@ -7,7 +7,7 @@ import (
 
 func IsAttribute(attr string) bool {
 	switch attr {
-	case "id", "author", "title", "full_vendor_name", "availability":
+	case "id", "author", "title", "full_vendor_name", "availability", "holdings_count":
 		return true
 	case "decision", "fund":
 		return true
