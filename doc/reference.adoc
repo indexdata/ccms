@@ -126,6 +126,10 @@ provided by CCMS or the original data source and cannot be modified:
 |`availability`
 |`text`
 |`999 13 $z`
+
+|`holdings_count`
+|`smallint`
+|number of holdings
 |===
 
 The second group are shared within a project and may be modified using
