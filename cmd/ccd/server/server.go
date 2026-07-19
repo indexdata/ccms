@@ -181,7 +181,7 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 		sendError(w, rqid, err.Error())
 		return
 	}
-	defer conn.Close(context.TODO())
+	defer conn.Close(ctx)
 
 	var req protocol.Request
 	user, err := s.ReadRequest(&dbx.DB{Ctx: ctx, Queryable: conn}, w, r, &req)
