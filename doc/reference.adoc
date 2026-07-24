@@ -18,6 +18,8 @@ include::createuser.adoc[]
 
 include::delete.adoc[]
 
+include::dropfilter.adoc[]
+
 include::dropfund.adoc[]
 
 include::dropproject.adoc[]

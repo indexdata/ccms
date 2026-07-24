@@ -1,0 +1,32 @@
+==== drop filter
+
+Remove a filter
+
+[source,subs="verbatim,quotes"]
+----
+drop filter `*_filter_name_*`
+----
+
+[discrete]
+===== Description
+
+The `drop filter` command removes a filter from the system.
+
+[discrete]
+===== Parameters
+
+[frame=none,grid=none,cols="1,2"]
+|===
+|`*_filter_name_*`
+|The name of the filter.
+|===
+
+[discrete]
+===== Examples
+
+Remove a filter `test.f`:
+
+----
+drop filter test.f;
+----
+

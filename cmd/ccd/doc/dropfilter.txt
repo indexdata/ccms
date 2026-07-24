@@ -1,0 +1,20 @@
+drop filter
+
+Remove a filter
+
+drop filter filter_name
+
+Description
+
+The drop filter command removes a filter from the system.
+
+Parameters
+
+filter_name The name of the filter.
+
+Examples
+
+Remove a filter test.f:
+
+drop filter test.f;
+

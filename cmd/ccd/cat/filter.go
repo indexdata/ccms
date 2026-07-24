@@ -8,7 +8,6 @@ import (
 
 	"github.com/indexdata/ccms/cmd/ccd/dberr"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
-	"github.com/indexdata/ccms/internal/pair"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -26,10 +25,10 @@ func CreateFilter(db *dbx.DB, projectID int32, filter string, cmdsql, sql string
 	return nil
 }
 
-func FilterExists(db *dbx.DB, filter pair.Pair) (bool, error) {
-	sql := "select 1 from ccms.filter where name=$1"
+func FilterExists(db *dbx.DB, projectID int32, filter string) (bool, error) {
+	sql := "select 1 from ccms.filter where project_id=$1 and name=$2"
 	var n int32
-	err := db.QueryRow(db.Ctx, sql, filter.String()).Scan(&n)
+	err := db.QueryRow(db.Ctx, sql, projectID, filter).Scan(&n)
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
 		return false, nil
@@ -41,10 +40,8 @@ func FilterExists(db *dbx.DB, filter pair.Pair) (bool, error) {
 }
 
 func FilterSQL(db *dbx.DB, filter string) (string, error) {
-	rows, err := db.Query(db.Ctx, "select sql from ccms.filter where name=$1", filter)
-	if err != nil {
-		return "", dberr.Error(err)
-	}
+	sql := "select sql from ccms.filter where name=$1"
+	rows, _ := db.Query(db.Ctx, sql, filter)
 	filterSQL, err := pgx.CollectRows(rows, pgx.RowTo[string])
 	if err != nil {
 		return "", err
@@ -82,4 +79,12 @@ func SortFilters(filters []Filter) {
 		}
 		return cmp.Compare(a.Filter, b.Filter)
 	})
+}
+
+func DropFilter(db *dbx.DB, projectID int32, filter string) error {
+	sql := "delete from ccms.filter where project_id=$1 and name=$2"
+	if _, err := db.Exec(db.Ctx, sql, projectID, filter); err != nil {
+		return dberr.Error(err)
+	}
+	return nil
 }

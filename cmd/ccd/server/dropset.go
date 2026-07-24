@@ -35,7 +35,7 @@ func dropSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DropSetStmt) *ccms.Res
 		return cmderr("set \"" + cmd.Set + "\" does not exist")
 	}
 
-	if err := cat.DropSet(db, set); err != nil {
+	if err := cat.DropSet(db, projectID, set); err != nil {
 		return cmderr(err.Error())
 	}
 

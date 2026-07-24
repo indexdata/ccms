@@ -21,6 +21,7 @@ func infoStmt(s *svr, db *dbx.DB, cmd *ast.InfoStmt) *ccms.Result {
 			"        create set       define a new set\n" +
 			"        create user      define a new user\n" +
 			"        delete           remove objects from set membership\n" +
+			"        drop filter      remove a filter\n" +
 			"        drop fund        remove a fund\n" +
 			"        drop project     remove a project\n" +
 			"        drop set         remove a set\n" +
@@ -50,6 +51,8 @@ func infoStmt(s *svr, db *dbx.DB, cmd *ast.InfoStmt) *ccms.Result {
 		docstr = doc.CreateUser()
 	case "delete":
 		docstr = doc.Delete()
+	case "drop filter":
+		docstr = doc.DropFilter()
 	case "drop fund":
 		docstr = doc.DropFund()
 	case "drop project":

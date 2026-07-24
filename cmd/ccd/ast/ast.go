@@ -76,6 +76,12 @@ type DeleteStmt struct {
 
 func (*DeleteStmt) node() {}
 
+type DropFilterStmt struct {
+	Filter string
+}
+
+func (*DropFilterStmt) node() {}
+
 type DropFundStmt struct {
 	Fund string
 }

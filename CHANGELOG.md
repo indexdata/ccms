@@ -7,6 +7,8 @@
 
 * Added command `show filters in project`.
 
+* Added command `drop filter`.
+
 * Added the attribute `holdings_count`.
 
 # v0.0.28

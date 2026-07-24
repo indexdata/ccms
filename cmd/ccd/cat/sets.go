@@ -121,14 +121,10 @@ func CreateSet(db *dbx.DB, set pair.Pair) error {
 	return nil
 }
 
-func DropSet(db *dbx.DB, set pair.Pair) error {
+func DropSet(db *dbx.DB, projectID int32, set pair.Pair) error {
 	q := "drop table " + SetTable(set)
 	if _, err := db.Exec(db.Ctx, q); err != nil {
 		return dberr.Error(err)
-	}
-	projectID, err := ProjectID(db, set.First)
-	if err != nil {
-		return err
 	}
 	sql := "delete from ccms.sets where project_id=$1 and name=$2"
 	if _, err := db.Exec(db.Ctx, sql, projectID, set.Second); err != nil {

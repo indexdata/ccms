@@ -61,6 +61,13 @@ func Delete() string {
 	return strings.TrimSpace(deleteTxt)
 }
 
+//go:embed dropfilter.txt
+var dropFilterTxt string
+
+func DropFilter() string {
+	return strings.TrimSpace(dropFilterTxt)
+}
+
 //go:embed dropfund.txt
 var dropFundTxt string
 

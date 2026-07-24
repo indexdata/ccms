@@ -51,10 +51,7 @@ func IsValidTargetProject(project string) bool {
 
 func Projects(db *dbx.DB) (prop.Property, error) {
 	sql := "select name, title from ccms.project"
-	rows, err := db.Query(db.Ctx, sql)
-	if err != nil {
-		return nil, dberr.Error(err)
-	}
+	rows, _ := db.Query(db.Ctx, sql)
 	projects, err := pgx.CollectRows(rows, pgx.RowToStructByPos[prop.Prop])
 	if err != nil {
 		return nil, err
@@ -283,10 +280,7 @@ func alterProjectAddFund(db *dbx.DB, project, fund string, projectID int32) erro
 func alterProjectDropFund(db *dbx.DB, project, fund string, projectID int32) error {
 	if fund == "*" {
 		sql := "select f.name from ccms.project p join ccms.project_fund pf on p.id=pf.project_id join ccms.fund f on pf.fund_id=f.id where p.name=$1"
-		rows, err := db.Query(db.Ctx, sql, project)
-		if err != nil {
-			return dberr.Error(err)
-		}
+		rows, _ := db.Query(db.Ctx, sql, project)
 		funds, err := pgx.CollectRows(rows, pgx.RowTo[string])
 		if err != nil {
 			return err
@@ -635,10 +629,7 @@ func ProjectFundExists(db *dbx.DB, projectID, fundID int32) (bool, error) {
 
 func ProjectsHavingFund(db *dbx.DB, fundID int32) ([]string, error) {
 	sql := "select p.name from ccms.project_fund pf join ccms.project p on pf.project_id=p.id where pf.fund_id=$1"
-	rows, err := db.Query(db.Ctx, sql, fundID)
-	if err != nil {
-		return nil, dberr.Error(err)
-	}
+	rows, _ := db.Query(db.Ctx, sql, fundID)
 	projects, err := pgx.CollectRows(rows, pgx.RowTo[string])
 	if err != nil {
 		return nil, err

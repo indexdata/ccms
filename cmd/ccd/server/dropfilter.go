@@ -1,8 +1,6 @@
 package server
 
 import (
-	"strings"
-
 	"github.com/indexdata/ccms"
 	"github.com/indexdata/ccms/cmd/ccd/ast"
 	"github.com/indexdata/ccms/cmd/ccd/cat"
@@ -10,7 +8,7 @@ import (
 	"github.com/indexdata/ccms/internal/pair"
 )
 
-func createFilterStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.CreateFilterStmt) *ccms.Result {
+func dropFilterStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DropFilterStmt) *ccms.Result {
 	filter := pair.Parse(cmd.Filter)
 
 	// is target filter valid?
@@ -30,26 +28,13 @@ func createFilterStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.CreateFilterStmt)
 	if err != nil {
 		return cmderr(err.Error())
 	}
-	if filterExists {
-		return cmderr("filter \"" + cmd.Filter + "\" already exists")
+	if !filterExists {
+		return cmderr("filter \"" + cmd.Filter + "\" does not exist")
 	}
 
-	if !cmd.Where.(*ast.WhereClause).Valid {
-		return cmderr("required \"where\" clause is missing")
-	}
-
-	var cmdsql strings.Builder
-	cmdsql.WriteString("create filter ")
-	cmdsql.WriteString(cmd.Filter)
-	cmdsql.WriteString(" where ")
-
-	sql, err := cmd.SQL(db, &cmdsql)
-	if err != nil {
+	if err := cat.DropFilter(db, projectID, filter.Second); err != nil {
 		return cmderr(err.Error())
 	}
 
-	if err := cat.CreateFilter(db, projectID, filter.Second, cmdsql.String(), sql); err != nil {
-		return cmderr(err.Error())
-	}
-	return ccms.NewResult("create filter")
+	return ccms.NewResult("drop filter")
 }

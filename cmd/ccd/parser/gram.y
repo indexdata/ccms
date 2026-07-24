@@ -28,6 +28,7 @@ import (
 %type <node> create_set_stmt
 %type <node> create_user_stmt
 %type <node> delete_stmt
+%type <node> drop_filter_stmt
 %type <node> drop_fund_stmt
 %type <node> drop_project_stmt
 %type <node> drop_set_stmt
@@ -185,6 +186,10 @@ basic_stmt:
 		{
 			$$ = $1
 		}
+	| drop_filter_stmt
+		{
+			$$ = $1
+		}
 	| drop_fund_stmt
 		{
 			$$ = $1
@@ -294,6 +299,12 @@ delete_stmt:
 	DELETE FROM name where_clause
 		{
 			$$ = &ast.DeleteStmt{From: $3, Where: $4}
+		}
+
+drop_filter_stmt:
+	DROP FILTER name
+		{
+			$$ = &ast.DropFilterStmt{Filter: $3}
 		}
 
 drop_fund_stmt:
