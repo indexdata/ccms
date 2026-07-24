@@ -60,26 +60,6 @@ func Projects(db *dbx.DB) (prop.Property, error) {
 }
 
 func DropProject(db *dbx.DB, project string) error {
-	if !IsValidTargetProject(project) {
-		return errors.New("invalid target project \"" + project + "\"")
-	}
-
-	projectID, err := ProjectID(db, project)
-	if err != nil {
-		return errors.New(err.Error())
-	}
-	if projectID == 0 {
-		return errors.New("project \"" + project + "\" does not exist")
-	}
-
-	sets, err := SetsInProject(db, project)
-	if err != nil {
-		return err
-	}
-	if len(sets) > 1 {
-		return errors.New("project \"" + project + "\" contains one or more user-defined sets")
-	}
-
 	sql := "drop table " + project + ".object"
 	if _, err := db.Exec(db.Ctx, sql); err != nil {
 		return dberr.Error(err)
