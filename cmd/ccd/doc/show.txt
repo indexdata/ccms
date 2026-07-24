@@ -4,6 +4,8 @@ List the values of a system variable
 
 show filters
 
+show filters [ in project project_name ]
+
 show fund fund_name
 
 show funds

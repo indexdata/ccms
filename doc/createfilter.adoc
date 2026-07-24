@@ -18,6 +18,14 @@ operator.
 [discrete]
 ===== Parameters
 
+[frame=none,grid=none,cols="1,2"]
+|===
+|`*_filter_name_*`
+|The name of the new filter, prefixed with the project name and a dot
+ (`.`).  For example, a filter `f` in project `p` would be written as
+ `p.f`.
+|===
+
 [discrete]
 ====== where
 
@@ -33,7 +41,7 @@ See also *Reference > Queries*.
 To filter on records where decision = true:
 
 ----
-create filter decided where decision = true;
+create filter p.decided where decision = true;
 
-select * from p.s where filter(decided);
+select * from p.s where filter(p.decided);
 ----

@@ -12,6 +12,10 @@ criteria can then be used for querying sets via the filter() operator.
 
 Parameters
 
+            The name of the new filter, prefixed with the project name and a
+filter_name dot (.). For example, a filter f in project p would be written as
+            p.f.
+
 where
 
 The where clause specifies a search condition in the form of a Boolean
@@ -23,7 +27,7 @@ Examples
 
 To filter on records where decision = true:
 
-create filter decided where decision = true;
+create filter p.decided where decision = true;
 
-select * from p.s where filter(decided);
+select * from p.s where filter(p.decided);
 

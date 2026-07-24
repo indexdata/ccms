@@ -6,6 +6,8 @@ List the values of a system variable
 ----
 show filters
 
+show filters [ in project `*_project_name_*` ]
+
 show fund `*_fund_name_*`
 
 show funds

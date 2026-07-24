@@ -5,7 +5,7 @@ import (
 	"github.com/indexdata/ccms/cmd/ccd/ast"
 	"github.com/indexdata/ccms/cmd/ccd/cat"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
-	"github.com/indexdata/ccms/internal/set"
+	"github.com/indexdata/ccms/internal/pair"
 )
 
 func insertStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.InsertStmt) *ccms.Result {
@@ -18,7 +18,7 @@ func insertStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.InsertStmt) *ccms.Resul
 		return cmderr("\"offset\" is not supported with insert")
 	}
 
-	intoSet := set.Parse(cmd.Into)
+	intoSet := pair.Parse(cmd.Into)
 	validTargetSet, err := cat.IsValidTargetSet(db, intoSet)
 	if err != nil {
 		return cmderr("checking if target set valid: " + err.Error())
@@ -27,12 +27,12 @@ func insertStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.InsertStmt) *ccms.Resul
 		return cmderr("invalid target set \"" + cmd.Into + "\"")
 	}
 
-	projectID, err := cat.ProjectID(db, intoSet.Project)
+	projectID, err := cat.ProjectID(db, intoSet.First)
 	if err != nil {
 		return cmderr("checking if project exists: " + err.Error())
 	}
 	if projectID == 0 {
-		return cmderr("project \"" + intoSet.Project + "\" does not exist")
+		return cmderr("project \"" + intoSet.First + "\" does not exist")
 	}
 
 	intoSetExists, err := cat.SetExists(db, intoSet)
@@ -44,8 +44,8 @@ func insertStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.InsertStmt) *ccms.Resul
 	}
 
 	from := cmd.Query.(*ast.QueryClause).From
-	fromSet := set.Parse(from)
-	if intoSet.Project != fromSet.Project {
+	fromSet := pair.Parse(from)
+	if intoSet.First != fromSet.First {
 		return cmderr("sets \"" + intoSet.String() + "\" and \"" + fromSet.String() + "\" are in different projects")
 	}
 	fromSetExists, err := cat.SetExists(db, fromSet)

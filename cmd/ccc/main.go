@@ -537,6 +537,7 @@ var completer = readline.NewPrefixCompleter(
 		readline.PcItem("version()"),
 	),
 	readline.PcItem("show",
+		readline.PcItem("filters"),
 		readline.PcItem("fund"),
 		readline.PcItem("funds"),
 		readline.PcItem("project"),

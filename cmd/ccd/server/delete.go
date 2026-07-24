@@ -6,11 +6,11 @@ import (
 	"github.com/indexdata/ccms/cmd/ccd/cat"
 	"github.com/indexdata/ccms/cmd/ccd/dberr"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
-	"github.com/indexdata/ccms/internal/set"
+	"github.com/indexdata/ccms/internal/pair"
 )
 
 func deleteStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DeleteStmt) *ccms.Result {
-	fromSet := set.Parse(cmd.From)
+	fromSet := pair.Parse(cmd.From)
 
 	validTargetSet, err := cat.IsValidTargetSet(db, fromSet)
 	if err != nil {
@@ -20,12 +20,12 @@ func deleteStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DeleteStmt) *ccms.Resul
 		return cmderr("invalid target set \"" + cmd.From + "\"")
 	}
 
-	projectID, err := cat.ProjectID(db, fromSet.Project)
+	projectID, err := cat.ProjectID(db, fromSet.First)
 	if err != nil {
 		return cmderr("checking if project exists: " + err.Error())
 	}
 	if projectID == 0 {
-		return cmderr("project \"" + fromSet.Project + "\" does not exist")
+		return cmderr("project \"" + fromSet.First + "\" does not exist")
 	}
 
 	setExists, err := cat.SetExists(db, fromSet)

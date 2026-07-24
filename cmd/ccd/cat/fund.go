@@ -69,10 +69,7 @@ func FundID(db *dbx.DB, fund string) (int32, error) {
 
 func Funds(db *dbx.DB) (prop.Property, error) {
 	sql := "select name, title from ccms.fund"
-	rows, err := db.Query(db.Ctx, sql)
-	if err != nil {
-		return nil, dberr.Error(err)
-	}
+	rows, _ := db.Query(db.Ctx, sql)
 	funds, err := pgx.CollectRows(rows, pgx.RowToStructByPos[prop.Prop])
 	if err != nil {
 		return nil, err

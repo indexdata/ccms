@@ -1,7 +1,6 @@
 package server
 
 import (
-	"slices"
 	"strings"
 
 	"github.com/indexdata/ccms"
@@ -14,9 +13,19 @@ func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
 	result := ccms.NewResult("show")
 	switch cmd.Type {
 	case "filters":
-		result.AddField("name", "text")
+		if cmd.In != "" {
+			projectID, err := cat.ProjectID(db, cmd.In)
+			if err != nil {
+				return cmderr(err.Error())
+			}
+			if projectID == 0 {
+				return cmderr("project \"" + cmd.In + "\" does not exist")
+			}
+		}
+		result.AddField("project", "text")
+		result.AddField("filter", "text")
 		result.AddField("definition", "text")
-		if err := addShowFiltersData(db, result); err != nil {
+		if err := addShowFiltersData(db, result, cmd.In); err != nil {
 			return cmderr(err.Error())
 		}
 	case "fund":
@@ -58,7 +67,8 @@ func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
 				return cmderr("project \"" + cmd.In + "\" does not exist")
 			}
 		}
-		result.AddField("name", "text")
+		result.AddField("project", "text")
+		result.AddField("set", "text")
 		if err := addShowSetsData(db, result, cmd.In); err != nil {
 			return cmderr(err.Error())
 		}
@@ -136,20 +146,26 @@ func addShowProjectsData(db *dbx.DB, result *ccms.Result) error {
 	return nil
 }
 
-func addShowFiltersData(db *dbx.DB, result *ccms.Result) error {
-	filters, err := cat.Filters(db)
+func addShowFiltersData(db *dbx.DB, result *ccms.Result, in string) error {
+	var filters []cat.Filter
+	var err error
+	if in == "" {
+		filters, err = cat.Filters(db)
+	} else {
+		filters, err = cat.FiltersInProject(db, in)
+	}
 	if err != nil {
 		return err
 	}
 	cat.SortFilters(filters)
 	for i := range filters {
-		result.AddData([]any{filters[i].Name, filters[i].Definition})
+		result.AddData([]any{filters[i].Project, filters[i].Filter, filters[i].Definition})
 	}
 	return nil
 }
 
 func addShowSetsData(db *dbx.DB, result *ccms.Result, in string) error {
-	var sets []string
+	var sets []cat.Set
 	var err error
 	if in == "" {
 		sets, err = cat.Sets(db)
@@ -159,9 +175,9 @@ func addShowSetsData(db *dbx.DB, result *ccms.Result, in string) error {
 	if err != nil {
 		return err
 	}
-	slices.Sort(sets)
+	cat.SortSets(sets)
 	for i := range sets {
-		result.AddData([]any{sets[i]})
+		result.AddData([]any{sets[i].Project, sets[i].Set})
 	}
 	return nil
 }

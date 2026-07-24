@@ -5,11 +5,11 @@ import (
 	"github.com/indexdata/ccms/cmd/ccd/ast"
 	"github.com/indexdata/ccms/cmd/ccd/cat"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
-	"github.com/indexdata/ccms/internal/set"
+	"github.com/indexdata/ccms/internal/pair"
 )
 
 func dropSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DropSetStmt) *ccms.Result {
-	set := set.Parse(cmd.Set)
+	set := pair.Parse(cmd.Set)
 
 	validTargetSet, err := cat.IsValidTargetSet(db, set)
 	if err != nil {
@@ -19,12 +19,12 @@ func dropSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DropSetStmt) *ccms.Res
 		return cmderr("invalid target set \"" + cmd.Set + "\"")
 	}
 
-	projectID, err := cat.ProjectID(db, set.Project)
+	projectID, err := cat.ProjectID(db, set.First)
 	if err != nil {
 		return cmderr(err.Error())
 	}
 	if projectID == 0 {
-		return cmderr("project \"" + set.Project + "\" does not exist")
+		return cmderr("project \"" + set.First + "\" does not exist")
 	}
 
 	setExists, err := cat.SetExists(db, set)

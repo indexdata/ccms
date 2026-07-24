@@ -8,7 +8,7 @@ import (
 	"github.com/indexdata/ccms/cmd/ccd/cat"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
 	"github.com/indexdata/ccms/internal/global"
-	"github.com/indexdata/ccms/internal/set"
+	"github.com/indexdata/ccms/internal/pair"
 )
 
 // conversion to SQL
@@ -40,7 +40,7 @@ func (s *DeleteStmt) SQL(db *dbx.DB) (string, error) {
 }
 
 func (s *DeleteStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
-	fromSet := set.Parse(s.From)
+	fromSet := pair.Parse(s.From)
 
 	fromTable := cat.SetTable(fromSet)
 	table := dbx.ParseTable(fromTable)
@@ -78,7 +78,7 @@ func (s *InsertStmt) SQL(db *dbx.DB) (string, error) {
 }
 
 func (s *InsertStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
-	intoSet := set.Parse(s.Into)
+	intoSet := pair.Parse(s.Into)
 
 	b.WriteString("insert into ")
 	b.WriteString(cat.SetTable(intoSet))
@@ -118,7 +118,7 @@ func (s *SelectStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
 }
 
 func (s *QueryClause) sql(db *dbx.DB, a, b *strings.Builder) error {
-	fromSet := set.Parse(s.From)
+	fromSet := pair.Parse(s.From)
 
 	fromTable := cat.SetTable(fromSet)
 	table := dbx.ParseTable(fromTable)

@@ -6,12 +6,14 @@ import (
 	"github.com/indexdata/ccms"
 	"github.com/indexdata/ccms/cmd/ccd/ast"
 	"github.com/indexdata/ccms/cmd/ccd/cat"
-	"github.com/indexdata/ccms/cmd/ccd/dberr"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
+	"github.com/indexdata/ccms/internal/pair"
 )
 
 func createFilterStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.CreateFilterStmt) *ccms.Result {
-	filterExists, err := cat.FilterExists(db, cmd.Filter)
+	filter := pair.Parse(cmd.Filter)
+
+	filterExists, err := cat.FilterExists(db, filter)
 	if err != nil {
 		return cmderr(err.Error())
 	}
@@ -19,26 +21,35 @@ func createFilterStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.CreateFilterStmt)
 		return cmderr("filter \"" + cmd.Filter + "\" already exists")
 	}
 
-	if !cat.IsValidFilterName(cmd.Filter) {
+	// is target filter valid?
+	if filter.First == "" || filter.Second == "" {
 		return cmderr("invalid filter name \"" + cmd.Filter + "\"")
+	}
+	projectID, err := cat.ProjectID(db, filter.First)
+	if err != nil {
+		return cmderr(err.Error())
+	}
+	if projectID == 0 {
+		return cmderr("invalid filter name \"" + cmd.Filter +
+			"\" (project \"" + filter.First + "\" does not exist)")
 	}
 
 	if !cmd.Where.(*ast.WhereClause).Valid {
 		return cmderr("required \"where\" clause is missing")
 	}
 
-	var a strings.Builder
-	a.WriteString("create filter ")
-	a.WriteString(cmd.Filter)
-	a.WriteString(" where ")
+	var cmdsql strings.Builder
+	cmdsql.WriteString("create filter ")
+	cmdsql.WriteString(cmd.Filter)
+	cmdsql.WriteString(" where ")
 
-	sql, err := cmd.SQL(db, &a)
+	sql, err := cmd.SQL(db, &cmdsql)
 	if err != nil {
 		return cmderr(err.Error())
 	}
-	q := "insert into ccms.filter (name, command, sql) values ($1, $2, $3)"
-	if _, err := db.Exec(db.Ctx, q, cmd.Filter, a.String(), sql); err != nil {
-		return cmderr(dberr.String(err))
+
+	if err := cat.CreateFilter(db, projectID, filter.Second, cmdsql.String(), sql); err != nil {
+		return cmderr(err.Error())
 	}
 	return ccms.NewResult("create filter")
 }

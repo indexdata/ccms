@@ -1,5 +1,12 @@
 # development
 
+* Commands `show filters` and `show sets` now return project name in a
+  separate column.
+
+* Filters now have a project name space.
+
+* Added command `show filters in project`.
+
 * Added the attribute `holdings_count`.
 
 # v0.0.28
