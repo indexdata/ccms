@@ -20,7 +20,7 @@ func dropProjectStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DropProjectStmt) *
 		return cmderr("project \"" + cmd.Project + "\" does not exist")
 	}
 
-	sets, err := cat.SetsInProject(db, cmd.Project)
+	sets, err := cat.SetsInProject(db, projectID, cmd.Project)
 	if err != nil {
 		return cmderr(err.Error())
 	}
@@ -28,7 +28,7 @@ func dropProjectStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DropProjectStmt) *
 		return cmderr("project \"" + cmd.Project + "\" contains one or more user-defined sets")
 	}
 
-	filters, err := cat.FiltersInProject(db, cmd.Project)
+	filters, err := cat.FiltersInProject(db, projectID, cmd.Project)
 	if err != nil {
 		return cmderr(err.Error())
 	}

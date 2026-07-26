@@ -81,9 +81,15 @@ func Sets(db *dbx.DB) ([]Set, error) {
 	return sets, nil
 }
 
-func SetsInProject(db *dbx.DB, project string) ([]Set, error) {
-	sql := "select p.name, s.name from ccms.sets s join ccms.project p on s.project_id=p.id where p.name=$1"
-	rows, _ := db.Query(db.Ctx, sql, project)
+func SetsInProject(db *dbx.DB, projectID int32, project string) ([]Set, error) {
+	var rows pgx.Rows
+	if projectID == 0 {
+		sql := "select p.name, s.name from ccms.sets s join ccms.project p on s.project_id=p.id"
+		rows, _ = db.Query(db.Ctx, sql)
+	} else {
+		sql := "select '" + project + "', s.name from ccms.sets s where s.project_id=$1"
+		rows, _ = db.Query(db.Ctx, sql, projectID)
+	}
 	sets, err := pgx.CollectRows(rows, pgx.RowToStructByPos[Set])
 	if err != nil {
 		return nil, err

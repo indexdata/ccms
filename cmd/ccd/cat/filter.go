@@ -53,17 +53,17 @@ func FilterSQL(db *dbx.DB, filter string) (string, error) {
 }
 
 func Filters(db *dbx.DB) ([]Filter, error) {
-	return FiltersInProject(db, "")
+	return FiltersInProject(db, 0, "")
 }
 
-func FiltersInProject(db *dbx.DB, project string) ([]Filter, error) {
+func FiltersInProject(db *dbx.DB, projectID int32, project string) ([]Filter, error) {
 	var rows pgx.Rows
-	if project == "" {
+	if projectID == 0 {
 		sql := "select p.name, f.name, f.command from ccms.filter f join ccms.project p on f.project_id=p.id"
 		rows, _ = db.Query(db.Ctx, sql)
 	} else {
-		sql := "select p.name, f.name, f.command from ccms.filter f join ccms.project p on f.project_id=p.id where p.name=$1"
-		rows, _ = db.Query(db.Ctx, sql, project)
+		sql := "select '" + project + "', f.name, f.command from ccms.filter f where f.project_id=$1"
+		rows, _ = db.Query(db.Ctx, sql, projectID)
 	}
 	filters, err := pgx.CollectRows(rows, pgx.RowToStructByPos[Filter])
 	if err != nil {

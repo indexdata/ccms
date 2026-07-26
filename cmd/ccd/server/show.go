@@ -13,8 +13,10 @@ func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
 	result := ccms.NewResult("show")
 	switch cmd.Type {
 	case "filters":
+		var projectID int32
 		if cmd.In != "" {
-			projectID, err := cat.ProjectID(db, cmd.In)
+			var err error
+			projectID, err = cat.ProjectID(db, cmd.In)
 			if err != nil {
 				return cmderr(err.Error())
 			}
@@ -25,7 +27,7 @@ func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
 		result.AddField("project", "text")
 		result.AddField("filter", "text")
 		result.AddField("definition", "text")
-		if err := addShowFiltersData(db, result, cmd.In); err != nil {
+		if err := addShowFiltersData(db, result, projectID, cmd.In); err != nil {
 			return cmderr(err.Error())
 		}
 	case "fund":
@@ -58,8 +60,10 @@ func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
 			return cmderr(err.Error())
 		}
 	case "sets":
+		var projectID int32
 		if cmd.In != "" {
-			projectID, err := cat.ProjectID(db, cmd.In)
+			var err error
+			projectID, err = cat.ProjectID(db, cmd.In)
 			if err != nil {
 				return cmderr(err.Error())
 			}
@@ -69,7 +73,7 @@ func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
 		}
 		result.AddField("project", "text")
 		result.AddField("set", "text")
-		if err := addShowSetsData(db, result, cmd.In); err != nil {
+		if err := addShowSetsData(db, result, projectID, cmd.In); err != nil {
 			return cmderr(err.Error())
 		}
 	case "tags":
@@ -146,13 +150,13 @@ func addShowProjectsData(db *dbx.DB, result *ccms.Result) error {
 	return nil
 }
 
-func addShowFiltersData(db *dbx.DB, result *ccms.Result, in string) error {
+func addShowFiltersData(db *dbx.DB, result *ccms.Result, projectID int32, project string) error {
 	var filters []cat.Filter
 	var err error
-	if in == "" {
+	if project == "" {
 		filters, err = cat.Filters(db)
 	} else {
-		filters, err = cat.FiltersInProject(db, in)
+		filters, err = cat.FiltersInProject(db, projectID, project)
 	}
 	if err != nil {
 		return err
@@ -164,13 +168,13 @@ func addShowFiltersData(db *dbx.DB, result *ccms.Result, in string) error {
 	return nil
 }
 
-func addShowSetsData(db *dbx.DB, result *ccms.Result, in string) error {
+func addShowSetsData(db *dbx.DB, result *ccms.Result, projectID int32, project string) error {
 	var sets []cat.Set
 	var err error
-	if in == "" {
+	if project == "" {
 		sets, err = cat.Sets(db)
 	} else {
-		sets, err = cat.SetsInProject(db, in)
+		sets, err = cat.SetsInProject(db, projectID, project)
 	}
 	if err != nil {
 		return err
