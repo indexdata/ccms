@@ -1,3 +1,8 @@
+# development
+
+* The command `select version()` has been replaced with the command
+  `show version`.
+
 # v0.0.29
 
 * Commands `show filters` and `show sets` now return project name in a

@@ -9,8 +9,6 @@ select { * | count(*) }
     [ limit count ]
     [ offset start ]
 
-select version()
-
 Description
 
 The select command retrieves data, typically a list of objects from a set

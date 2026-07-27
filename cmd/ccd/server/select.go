@@ -8,16 +8,12 @@ import (
 	"github.com/indexdata/ccms/cmd/ccd/ast"
 	"github.com/indexdata/ccms/cmd/ccd/cat"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
-	"github.com/indexdata/ccms/internal/global"
 	"github.com/indexdata/ccms/internal/util"
 	"github.com/jackc/pgx/v5/pgtype/zeronull"
 )
 
 func selectVersionStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.SelectVersionStmt) *ccms.Result {
-	result := ccms.NewResult("select")
-	result.AddField("version", "text")
-	result.AddData([]any{"CCMS " + global.Version})
-	return result
+	return cmderr("\"select version()\" is no longer supported; use \"show version\"")
 }
 
 func selectStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.SelectStmt) *ccms.Result {

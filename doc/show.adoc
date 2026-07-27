@@ -19,6 +19,8 @@ show projects
 show sets [ in project `*_project_name_*` ]
 
 show users
+
+show version
 ----
 
 [discrete]

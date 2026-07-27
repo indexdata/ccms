@@ -18,6 +18,8 @@ show sets [ in project project_name ]
 
 show users
 
+show version
+
 Description
 
 show lists the current values of system configurations or other variables.

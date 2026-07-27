@@ -10,8 +10,6 @@ select { * | count(*) }
     [ order by `**_attribute_**` [ asc | desc ] ]
     [ limit `**_count_**` ]
     [ offset `**_start_**` ]
-
-select version()
 ----
 
 [discrete]

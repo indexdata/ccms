@@ -7,6 +7,7 @@ import (
 	"github.com/indexdata/ccms/cmd/ccd/ast"
 	"github.com/indexdata/ccms/cmd/ccd/cat"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
+	"github.com/indexdata/ccms/internal/global"
 )
 
 func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
@@ -85,6 +86,9 @@ func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
 		if err := addShowUsersData(db, result); err != nil {
 			return cmderr(err.Error())
 		}
+	case "version":
+		result.AddField("version", "text")
+		result.AddData([]any{"CCMS " + global.Version})
 	default:
 		return cmderr("unknown variable \"" + cmd.Type + "\"")
 	}

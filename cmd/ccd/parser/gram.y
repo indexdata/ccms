@@ -383,6 +383,10 @@ show_stmt:
 		{
 			$$ = &ast.ShowStmt{Type: "projects"}
 		}
+	| SHOW VERSION
+		{
+			$$ = &ast.ShowStmt{Type: "version"}
+		}
 
 update_stmt:
 	UPDATE name SET name '=' name WHERE name '=' NUMBER

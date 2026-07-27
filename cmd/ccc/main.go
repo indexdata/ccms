@@ -300,10 +300,7 @@ func runClient() error {
 			case "info":
 				showNumRows = false
 				fallthrough
-			case "show":
-				showNumRows = false
-				fallthrough
-			case "select":
+			case "select", "show":
 				w := tabwriter.NewWriter(os.Stdout, 1, 1, 2, ' ', 0)
 				if header {
 					// print field names
@@ -543,7 +540,6 @@ var completer = readline.NewPrefixCompleter(
 	readline.PcItem("select",
 		readline.PcItem("*"),
 		readline.PcItem("count(*)"),
-		readline.PcItem("version()"),
 	),
 	readline.PcItem("show",
 		readline.PcItem("filters"),
@@ -553,6 +549,7 @@ var completer = readline.NewPrefixCompleter(
 		readline.PcItem("projects"),
 		readline.PcItem("sets"),
 		readline.PcItem("users"),
+		readline.PcItem("version"),
 	),
 	readline.PcItem("update"),
 )
