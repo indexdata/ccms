@@ -1,4 +1,4 @@
-# development
+# v0.0.29
 
 * Commands `show filters` and `show sets` now return project name in a
   separate column.
