@@ -4,7 +4,7 @@ Remove a project
 
 [source,subs="verbatim,quotes"]
 ----
-drop project `*_project_name_*`
+drop project `*_project_name_*` [ cascade ]
 ----
 
 [discrete]
@@ -24,6 +24,9 @@ cannot be undone.
 |===
 |`*_project_name_*`
 |The name of the project.
+
+|`cascade`
+|Automatically drop all sets and filters contained in the project.
 |===
 
 [discrete]

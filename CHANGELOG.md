@@ -9,6 +9,8 @@
 
 * Added command `drop filter`.
 
+* Added `cascade` option to the command `drop project`.
+
 * Added the attribute `holdings_count`.
 
 # v0.0.28

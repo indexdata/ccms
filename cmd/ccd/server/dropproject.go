@@ -20,20 +20,29 @@ func dropProjectStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DropProjectStmt) *
 		return cmderr("project \"" + cmd.Project + "\" does not exist")
 	}
 
-	sets, err := cat.SetsInProject(db, projectID, cmd.Project)
-	if err != nil {
-		return cmderr(err.Error())
-	}
-	if len(sets) > 1 {
-		return cmderr("project \"" + cmd.Project + "\" contains one or more user-defined sets")
-	}
+	if cmd.Cascade {
+		if err := cat.DropAllSetsInProject(db, projectID); err != nil {
+			return cmderr(err.Error())
+		}
+		if err := cat.DropAllFiltersInProject(db, projectID); err != nil {
+			return cmderr(err.Error())
+		}
+	} else {
+		sets, err := cat.SetsInProject(db, projectID, cmd.Project)
+		if err != nil {
+			return cmderr(err.Error())
+		}
+		if len(sets) > 1 {
+			return cmderr("project \"" + cmd.Project + "\" contains one or more user-defined sets")
+		}
 
-	filters, err := cat.FiltersInProject(db, projectID, cmd.Project)
-	if err != nil {
-		return cmderr(err.Error())
-	}
-	if len(filters) > 0 {
-		return cmderr("project \"" + cmd.Project + "\" contains one or more user-defined filters")
+		filters, err := cat.FiltersInProject(db, projectID, cmd.Project)
+		if err != nil {
+			return cmderr(err.Error())
+		}
+		if len(filters) > 0 {
+			return cmderr("project \"" + cmd.Project + "\" contains one or more user-defined filters")
+		}
 	}
 
 	if err := cat.DropProject(db, cmd.Project); err != nil {

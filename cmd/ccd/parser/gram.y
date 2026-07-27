@@ -69,6 +69,7 @@ import (
 %token ARCHIVED
 %token ASC
 %token BY
+%token CASCADE
 %token CREATE
 %token COUNT
 %token DELETE
@@ -317,6 +318,10 @@ drop_project_stmt:
 	DROP PROJECT name
 		{
 			$$ = &ast.DropProjectStmt{Project: $3}
+		}
+	| DROP PROJECT name CASCADE
+		{
+			$$ = &ast.DropProjectStmt{Project: $3, Cascade: true}
 		}
 
 drop_set_stmt:

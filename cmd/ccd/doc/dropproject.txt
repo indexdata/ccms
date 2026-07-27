@@ -2,7 +2,7 @@ drop project
 
 Remove a project
 
-drop project project_name
+drop project project_name [ cascade ]
 
 Description
 
@@ -16,6 +16,8 @@ Warning drop project removes a project permanently. The operation cannot be
 Parameters
 
 project_name The name of the project.
+
+cascade      Automatically drop all sets and filters contained in the project.
 
 Examples
 

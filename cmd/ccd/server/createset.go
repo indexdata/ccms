@@ -5,13 +5,13 @@ import (
 	"github.com/indexdata/ccms/cmd/ccd/ast"
 	"github.com/indexdata/ccms/cmd/ccd/cat"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
-	"github.com/indexdata/ccms/internal/pair"
+	"github.com/indexdata/ccms/internal/util"
 )
 
 func createSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.CreateSetStmt) *ccms.Result {
-	set := pair.Parse(cmd.Set)
+	project, set := util.ParsePair(cmd.Set)
 
-	setExists, err := cat.SetExists(db, set)
+	setExists, err := cat.SetExists(db, project, set)
 	if err != nil {
 		return cmderr(err.Error())
 	}
@@ -19,7 +19,7 @@ func createSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.CreateSetStmt) *ccms
 		return cmderr("set \"" + cmd.Set + "\" already exists")
 	}
 
-	validTargetSet, err := cat.IsValidTargetSet(db, set)
+	validTargetSet, err := cat.IsValidTargetSet(db, project, set)
 	if err != nil {
 		return cmderr(err.Error())
 	}
@@ -27,15 +27,15 @@ func createSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.CreateSetStmt) *ccms
 		return cmderr("invalid set name \"" + cmd.Set + "\"")
 	}
 
-	projectID, err := cat.ProjectID(db, set.First)
+	projectID, err := cat.ProjectID(db, project)
 	if err != nil {
 		return cmderr("checking if project exists: " + err.Error())
 	}
 	if projectID == 0 {
-		return cmderr("project \"" + set.First + "\" does not exist")
+		return cmderr("project \"" + project + "\" does not exist")
 	}
 
-	if err := cat.CreateSet(db, set); err != nil {
+	if err := cat.CreateSet(db, project, set); err != nil {
 		return cmderr("writing set: " + err.Error())
 	}
 

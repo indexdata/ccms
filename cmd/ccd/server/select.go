@@ -9,7 +9,7 @@ import (
 	"github.com/indexdata/ccms/cmd/ccd/cat"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
 	"github.com/indexdata/ccms/internal/global"
-	"github.com/indexdata/ccms/internal/pair"
+	"github.com/indexdata/ccms/internal/util"
 	"github.com/jackc/pgx/v5/pgtype/zeronull"
 )
 
@@ -36,15 +36,15 @@ func selectStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.SelectStmt) *ccms.Resul
 	}
 
 	from := cmd.Query.(*ast.QueryClause).From
-	fromSet := pair.Parse(from)
-	projectID, err := cat.ProjectID(db, fromSet.First)
+	fromProject, fromSet := util.ParsePair(from)
+	projectID, err := cat.ProjectID(db, fromProject)
 	if err != nil {
 		return cmderr("checking if project exists: " + err.Error())
 	}
 	if projectID == 0 {
-		return cmderr("project \"" + fromSet.First + "\" does not exist")
+		return cmderr("project \"" + fromProject + "\" does not exist")
 	}
-	setExists, err := cat.SetExists(db, fromSet)
+	setExists, err := cat.SetExists(db, fromProject, fromSet)
 	if err != nil {
 		return cmderr("checking if set exists: " + err.Error())
 	}

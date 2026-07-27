@@ -8,7 +8,6 @@ import (
 
 	"github.com/indexdata/ccms/cmd/ccd/dberr"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
-	"github.com/indexdata/ccms/internal/pair"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -17,9 +16,9 @@ type Set struct {
 	Set     string
 }
 
-func SetExists(db *dbx.DB, set pair.Pair) (bool, error) {
-	if set.Second == "object" {
-		projectID, err := ProjectID(db, set.First)
+func SetExists(db *dbx.DB, project, set string) (bool, error) {
+	if set == "object" {
+		projectID, err := ProjectID(db, project)
 		if err != nil {
 			return false, err
 		}
@@ -28,7 +27,7 @@ func SetExists(db *dbx.DB, set pair.Pair) (bool, error) {
 
 	sql := "select 1 from ccms.sets s join ccms.project p on s.project_id=p.id where p.name=$1 and s.name=$2"
 	var n int32
-	err := db.QueryRow(db.Ctx, sql, set.First, set.Second).Scan(&n)
+	err := db.QueryRow(db.Ctx, sql, project, set).Scan(&n)
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
 		return false, nil
@@ -39,14 +38,14 @@ func SetExists(db *dbx.DB, set pair.Pair) (bool, error) {
 	}
 }
 
-func IsValidTargetSet(db *dbx.DB, set pair.Pair) (bool, error) {
-	if set.First == "" || set.Second == "" {
+func IsValidTargetSet(db *dbx.DB, project, set string) (bool, error) {
+	if project == "" || set == "" {
 		return false, nil
 	}
-	if set.Second == "object" {
+	if set == "object" {
 		return false, nil
 	}
-	projectID, err := ProjectID(db, set.First)
+	projectID, err := ProjectID(db, project)
 	if err != nil {
 		return false, err
 	}
@@ -54,31 +53,15 @@ func IsValidTargetSet(db *dbx.DB, set pair.Pair) (bool, error) {
 }
 
 // return table containing set
-func SetTable(set pair.Pair) string {
-	if set.Second == "object" {
-		return set.String()
+func SetTable(project, set string) string {
+	if set == "object" {
+		return project + "." + set
 	}
-	return set.First + ".s_" + set.Second
+	return project + ".s_" + set
 }
 
 func Sets(db *dbx.DB) ([]Set, error) {
-	sql := "select p.name, s.name from ccms.sets s join ccms.project p on s.project_id=p.id"
-	rows, _ := db.Query(db.Ctx, sql)
-	sets, err := pgx.CollectRows(rows, pgx.RowToStructByPos[Set])
-	if err != nil {
-		return nil, err
-	}
-
-	// add object sets
-	projects, err := Projects(db)
-	if err != nil {
-		return nil, err
-	}
-	for i := range projects {
-		sets = append(sets, Set{Project: projects[i].Name, Set: "object"})
-	}
-
-	return sets, nil
+	return SetsInProject(db, 0, "")
 }
 
 func SetsInProject(db *dbx.DB, projectID int32, project string) ([]Set, error) {
@@ -95,8 +78,18 @@ func SetsInProject(db *dbx.DB, projectID int32, project string) ([]Set, error) {
 		return nil, err
 	}
 
-	// add object set
-	sets = append(sets, Set{Project: project, Set: "object"})
+	// add object sets
+	if projectID == 0 {
+		projects, err := Projects(db)
+		if err != nil {
+			return nil, err
+		}
+		for i := range projects {
+			sets = append(sets, Set{Project: projects[i].Name, Set: "object"})
+		}
+	} else {
+		sets = append(sets, Set{Project: project, Set: "object"})
+	}
 
 	return sets, nil
 }
@@ -110,31 +103,49 @@ func SortSets(sets []Set) {
 	})
 }
 
-func CreateSet(db *dbx.DB, set pair.Pair) error {
-	sql := "create table " + SetTable(set) + "(" +
+func CreateSet(db *dbx.DB, project, set string) error {
+	sql := "create table " + SetTable(project, set) + "(" +
 		"id bigint primary key)"
 	if _, err := db.Exec(db.Ctx, sql); err != nil {
 		return dberr.Error(err)
 	}
-	projectID, err := ProjectID(db, set.First)
+	projectID, err := ProjectID(db, project)
 	if err != nil {
 		return err
 	}
 	sql = "insert into ccms.sets (project_id, name) values ($1, $2)"
-	if _, err := db.Exec(db.Ctx, sql, projectID, set.Second); err != nil {
+	if _, err := db.Exec(db.Ctx, sql, projectID, set); err != nil {
 		return dberr.Error(err)
 	}
 	return nil
 }
 
-func DropSet(db *dbx.DB, projectID int32, set pair.Pair) error {
-	q := "drop table " + SetTable(set)
+func DropSet(db *dbx.DB, projectID int32, project, set string) error {
+	q := "drop table " + SetTable(project, set)
 	if _, err := db.Exec(db.Ctx, q); err != nil {
 		return dberr.Error(err)
 	}
 	sql := "delete from ccms.sets where project_id=$1 and name=$2"
-	if _, err := db.Exec(db.Ctx, sql, projectID, set.Second); err != nil {
+	if _, err := db.Exec(db.Ctx, sql, projectID, set); err != nil {
 		return dberr.Error(err)
+	}
+	return nil
+}
+
+func DropAllSetsInProject(db *dbx.DB, projectID int32) error {
+	sets, err := Sets(db)
+	if err != nil {
+		return err
+	}
+	for i := range sets {
+		project := sets[i].Project
+		set := sets[i].Set
+		if set == "object" {
+			continue
+		}
+		if err := DropSet(db, projectID, project, set); err != nil {
+			return err
+		}
 	}
 	return nil
 }

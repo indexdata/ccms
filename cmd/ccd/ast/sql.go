@@ -8,7 +8,7 @@ import (
 	"github.com/indexdata/ccms/cmd/ccd/cat"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
 	"github.com/indexdata/ccms/internal/global"
-	"github.com/indexdata/ccms/internal/pair"
+	"github.com/indexdata/ccms/internal/util"
 )
 
 // conversion to SQL
@@ -40,9 +40,9 @@ func (s *DeleteStmt) SQL(db *dbx.DB) (string, error) {
 }
 
 func (s *DeleteStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
-	fromSet := pair.Parse(s.From)
+	fromProject, fromSet := util.ParsePair(s.From)
 
-	fromTable := cat.SetTable(fromSet)
+	fromTable := cat.SetTable(fromProject, fromSet)
 	table := dbx.ParseTable(fromTable)
 
 	b.WriteString("delete from ")
@@ -51,7 +51,7 @@ func (s *DeleteStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
 	if w.Valid {
 		b.WriteString(" where id in (")
 		b.WriteString("select t.id from ")
-		b.WriteString(cat.SetTable(fromSet))
+		b.WriteString(cat.SetTable(fromProject, fromSet))
 
 		b.WriteString(" t join ccms.attr a on t.id=a.id")
 
@@ -78,10 +78,10 @@ func (s *InsertStmt) SQL(db *dbx.DB) (string, error) {
 }
 
 func (s *InsertStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
-	intoSet := pair.Parse(s.Into)
+	intoProject, intoSet := util.ParsePair(s.Into)
 
 	b.WriteString("insert into ")
-	b.WriteString(cat.SetTable(intoSet))
+	b.WriteString(cat.SetTable(intoProject, intoSet))
 	b.WriteString(" select a.id ")
 	if err := s.Query.(*QueryClause).sql(db, a, b); err != nil {
 		return err
@@ -118,9 +118,9 @@ func (s *SelectStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
 }
 
 func (s *QueryClause) sql(db *dbx.DB, a, b *strings.Builder) error {
-	fromSet := pair.Parse(s.From)
+	fromProject, fromSet := util.ParsePair(s.From)
 
-	fromTable := cat.SetTable(fromSet)
+	fromTable := cat.SetTable(fromProject, fromSet)
 	table := dbx.ParseTable(fromTable)
 
 	b.WriteString("from ")

@@ -193,7 +193,7 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 		return
 	}
 
-	log.Info("[%d] %s (%s) - %q", rqid, addr, user, req.Commands)
+	log.Info("[%d] %s (%s) - %q", rqid, addr, user, strings.TrimSpace(req.Commands))
 
 	defer func() {
 		if r := recover(); r != nil {

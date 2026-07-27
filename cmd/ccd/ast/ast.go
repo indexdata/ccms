@@ -90,6 +90,7 @@ func (*DropFundStmt) node() {}
 
 type DropProjectStmt struct {
 	Project string
+	Cascade bool
 }
 
 func (*DropProjectStmt) node() {}

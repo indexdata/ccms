@@ -9,23 +9,23 @@ import (
 	"github.com/indexdata/ccms/cmd/ccd/cat"
 	"github.com/indexdata/ccms/cmd/ccd/dberr"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
-	"github.com/indexdata/ccms/internal/pair"
+	"github.com/indexdata/ccms/internal/util"
 	"github.com/jackc/pgx/v5"
 )
 
 func updateStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.UpdateStmt) *ccms.Result {
-	set := pair.Parse(cmd.Set)
+	project, set := util.ParsePair(cmd.Set)
 
-	if set.Second != "object" {
+	if set != "object" {
 		return cmderr("set \"" + cmd.Set + "\" is not valid for update")
 	}
-	projectID, err := cat.ProjectID(db, set.First)
+	projectID, err := cat.ProjectID(db, project)
 	if err != nil {
 		return cmderr("checking if project exists: " + err.Error())
 	}
 
 	if projectID == 0 {
-		return cmderr("project \"" + set.First + "\" does not exist")
+		return cmderr("project \"" + project + "\" does not exist")
 	}
 
 	if cmd.IDAttr != "id" {

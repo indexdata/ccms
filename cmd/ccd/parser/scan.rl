@@ -59,6 +59,7 @@ func (lex *lexer) Lex(out *yySymType) int {
 			'archived'i => { tok = ARCHIVED; fbreak; };
 			'asc'i => { tok = ASC; fbreak; };
 			'by'i => { tok = BY; fbreak; };
+			'cascade'i => { tok = CASCADE; fbreak; };
 			'create'i => { tok = CREATE; fbreak; };
 			'count'i => { tok = COUNT; fbreak; };
 			'delete'i => { tok = DELETE; fbreak; };

@@ -5,7 +5,7 @@ import (
 	"github.com/indexdata/ccms/cmd/ccd/ast"
 	"github.com/indexdata/ccms/cmd/ccd/cat"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
-	"github.com/indexdata/ccms/internal/pair"
+	"github.com/indexdata/ccms/internal/util"
 )
 
 func insertStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.InsertStmt) *ccms.Result {
@@ -18,8 +18,8 @@ func insertStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.InsertStmt) *ccms.Resul
 		return cmderr("\"offset\" is not supported with insert")
 	}
 
-	intoSet := pair.Parse(cmd.Into)
-	validTargetSet, err := cat.IsValidTargetSet(db, intoSet)
+	intoProject, intoSet := util.ParsePair(cmd.Into)
+	validTargetSet, err := cat.IsValidTargetSet(db, intoProject, intoSet)
 	if err != nil {
 		return cmderr("checking if target set valid: " + err.Error())
 	}
@@ -27,15 +27,15 @@ func insertStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.InsertStmt) *ccms.Resul
 		return cmderr("invalid target set \"" + cmd.Into + "\"")
 	}
 
-	projectID, err := cat.ProjectID(db, intoSet.First)
+	projectID, err := cat.ProjectID(db, intoProject)
 	if err != nil {
 		return cmderr("checking if project exists: " + err.Error())
 	}
 	if projectID == 0 {
-		return cmderr("project \"" + intoSet.First + "\" does not exist")
+		return cmderr("project \"" + intoProject + "\" does not exist")
 	}
 
-	intoSetExists, err := cat.SetExists(db, intoSet)
+	intoSetExists, err := cat.SetExists(db, intoProject, intoSet)
 	if err != nil {
 		return cmderr("checking if set exists: " + err.Error())
 	}
@@ -44,11 +44,11 @@ func insertStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.InsertStmt) *ccms.Resul
 	}
 
 	from := cmd.Query.(*ast.QueryClause).From
-	fromSet := pair.Parse(from)
-	if intoSet.First != fromSet.First {
-		return cmderr("sets \"" + intoSet.String() + "\" and \"" + fromSet.String() + "\" are in different projects")
+	fromProject, fromSet := util.ParsePair(from)
+	if intoProject != fromProject {
+		return cmderr("sets \"" + intoProject + "." + intoSet + "\" and \"" + fromProject + "." + fromSet + "\" are in different projects")
 	}
-	fromSetExists, err := cat.SetExists(db, fromSet)
+	fromSetExists, err := cat.SetExists(db, fromProject, fromSet)
 	if err != nil {
 		return cmderr("checking if set exists: " + err.Error())
 	}

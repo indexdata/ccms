@@ -251,7 +251,9 @@ func runClient() error {
 		if l == "quit" || l == "quit;" || l == "exit" || l == "exit;" {
 			break
 		}
-		if line[len(line)-1] != ';' {
+		if line[len(line)-1] == ';' {
+			line = line[0 : len(line)-1]
+		} else {
 			eout.Error(errorPrefix + " missing semicolon")
 			continue
 		}
@@ -293,10 +295,13 @@ func runClient() error {
 				continue
 			}
 
+			showNumRows := true
 			switch result.Status() {
 			case "info":
+				showNumRows = false
 				fallthrough
 			case "show":
+				showNumRows = false
 				fallthrough
 			case "select":
 				w := tabwriter.NewWriter(os.Stdout, 1, 1, 2, ' ', 0)
@@ -332,10 +337,12 @@ func runClient() error {
 					fmt.Fprint(w, "\n")
 					j++
 				}
-				if j == 1 {
-					fmt.Fprint(w, "(1 row)\n")
-				} else {
-					_, _ = fmt.Fprintf(w, "(%d rows)\n", j)
+				if showNumRows {
+					if j == 1 {
+						fmt.Fprint(w, "(1 row)\n")
+					} else {
+						_, _ = fmt.Fprintf(w, "(%d rows)\n", j)
+					}
 				}
 				_ = w.Flush()
 				if line == "info;" {

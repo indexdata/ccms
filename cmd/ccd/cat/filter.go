@@ -88,3 +88,16 @@ func DropFilter(db *dbx.DB, projectID int32, filter string) error {
 	}
 	return nil
 }
+
+func DropAllFiltersInProject(db *dbx.DB, projectID int32) error {
+	filters, err := Filters(db)
+	if err != nil {
+		return err
+	}
+	for i := range filters {
+		if err := DropFilter(db, projectID, filters[i].Filter); err != nil {
+			return err
+		}
+	}
+	return nil
+}
