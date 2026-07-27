@@ -38,7 +38,7 @@ func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
 			return cmderr(err.Error())
 		}
 	case "funds":
-		result.AddField("name", "text")
+		result.AddField("fund", "text")
 		result.AddField("title", "text")
 		if err := addShowFundsData(db, result); err != nil {
 			return cmderr(err.Error())
@@ -54,7 +54,7 @@ func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
 			return cmderr(err.Error())
 		}
 	case "projects":
-		result.AddField("name", "text")
+		result.AddField("project", "text")
 		result.AddField("title", "text")
 		err := addShowProjectsData(db, result)
 		if err != nil {
@@ -74,13 +74,14 @@ func showStmt(s *svr, db *dbx.DB, cmd *ast.ShowStmt) *ccms.Result {
 		}
 		result.AddField("project", "text")
 		result.AddField("set", "text")
+		result.AddField("title", "text")
 		if err := addShowSetsData(db, result, projectID, cmd.In); err != nil {
 			return cmderr(err.Error())
 		}
 	case "tags":
 		result.AddField("name", "text")
 	case "users":
-		result.AddField("name", "text")
+		result.AddField("user", "text")
 		result.AddField("superuser", "boolean")
 		result.AddField("login", "boolean")
 		if err := addShowUsersData(db, result); err != nil {
@@ -185,7 +186,7 @@ func addShowSetsData(db *dbx.DB, result *ccms.Result, projectID int32, project s
 	}
 	cat.SortSets(sets)
 	for i := range sets {
-		result.AddData([]any{sets[i].Project, sets[i].Set})
+		result.AddData([]any{sets[i].Project, sets[i].Set, sets[i].Title})
 	}
 	return nil
 }

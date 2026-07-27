@@ -14,6 +14,7 @@ import (
 type Set struct {
 	Project string
 	Set     string
+	Title   string
 }
 
 func SetExists(db *dbx.DB, project, set string) (bool, error) {
@@ -67,10 +68,10 @@ func Sets(db *dbx.DB) ([]Set, error) {
 func SetsInProject(db *dbx.DB, projectID int32, project string) ([]Set, error) {
 	var rows pgx.Rows
 	if projectID == 0 {
-		sql := "select p.name, s.name from ccms.sets s join ccms.project p on s.project_id=p.id"
+		sql := "select p.name, s.name, s.title from ccms.sets s join ccms.project p on s.project_id=p.id"
 		rows, _ = db.Query(db.Ctx, sql)
 	} else {
-		sql := "select '" + project + "', s.name from ccms.sets s where s.project_id=$1"
+		sql := "select '" + project + "', s.name, s.title from ccms.sets s where s.project_id=$1"
 		rows, _ = db.Query(db.Ctx, sql, projectID)
 	}
 	sets, err := pgx.CollectRows(rows, pgx.RowToStructByPos[Set])
@@ -85,10 +86,10 @@ func SetsInProject(db *dbx.DB, projectID int32, project string) ([]Set, error) {
 			return nil, err
 		}
 		for i := range projects {
-			sets = append(sets, Set{Project: projects[i].Name, Set: "object"})
+			sets = append(sets, Set{Project: projects[i].Name, Set: "object", Title: "All Objects"})
 		}
 	} else {
-		sets = append(sets, Set{Project: project, Set: "object"})
+		sets = append(sets, Set{Project: project, Set: "object", Title: "All Objects"})
 	}
 
 	return sets, nil
@@ -113,8 +114,8 @@ func CreateSet(db *dbx.DB, project, set string) error {
 	if err != nil {
 		return err
 	}
-	sql = "insert into ccms.sets (project_id, name) values ($1, $2)"
-	if _, err := db.Exec(db.Ctx, sql, projectID, set); err != nil {
+	sql = "insert into ccms.sets (project_id, name, title) values ($1, $2, $3)"
+	if _, err := db.Exec(db.Ctx, sql, projectID, set, makeTitle(set)); err != nil {
 		return dberr.Error(err)
 	}
 	return nil

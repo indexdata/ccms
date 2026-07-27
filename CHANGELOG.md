@@ -1,5 +1,7 @@
 # development
 
+* Added minimal property `title` to sets.
+
 * The command `select version()` has been replaced with the command
   `show version`.
 
