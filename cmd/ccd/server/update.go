@@ -16,9 +16,14 @@ import (
 func updateStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.UpdateStmt) *ccms.Result {
 	project, set := util.ParsePair(cmd.Set)
 
-	if set != "object" {
-		return cmderr("set \"" + cmd.Set + "\" is not valid for update")
+	setExists, err := cat.SetExists(db, project, set)
+	if err != nil {
+		return cmderr(err.Error())
 	}
+	if !setExists {
+		return cmderr("set \"" + cmd.Set + "\" does not exist")
+	}
+
 	projectID, err := cat.ProjectID(db, project)
 	if err != nil {
 		return cmderr("checking if project exists: " + err.Error())
@@ -41,39 +46,42 @@ func updateStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.UpdateStmt) *ccms.Resul
 		return cmderr("object id = " + cmd.IDValue.Value + " does not exist")
 	}
 
-	switch cmd.Attr {
-	case "decision":
-		if cmd.ValueNull {
-			return cmderr("invalid decision \"null\"")
+	for i := range cmd.SetClause {
+		si := cmd.SetClause[i].(*ast.SetClause)
+		switch si.Attr {
+		case "decision":
+			if si.ValueNull {
+				return cmderr("invalid decision \"null\"")
+			}
+			if si.Value != "false" && si.Value != "true" {
+				return cmderr("invalid decision \"" + si.Value + "\"")
+			}
+		case "fund":
+			si.Attr = "fund_id"
+			if !si.ValueNull {
+				// look up fund id
+				var fundID int32
+				fundID, err = cat.FundID(db, si.Value)
+				if err != nil {
+					return cmderr("looking up fund: " + err.Error())
+				}
+				if fundID == 0 {
+					return cmderr("fund \"" + si.Value + "\" does not exist")
+				}
+				// ensure fund is valid for project
+				var inProject bool
+				inProject, err = cat.ProjectFundExists(db, projectID, fundID)
+				if err != nil {
+					return cmderr("looking up project fund: " + err.Error())
+				}
+				if !inProject {
+					return cmderr("fund \"" + si.Value + "\" is not selected for project")
+				}
+				si.Value = strconv.FormatInt(int64(fundID), 10)
+			}
+		default:
+			return cmderr("attribute \"" + si.Attr + "\" is not valid for update")
 		}
-		if cmd.Value != "false" && cmd.Value != "true" {
-			return cmderr("invalid decision \"" + cmd.Value + "\"")
-		}
-	case "fund":
-		cmd.Attr = "fund_id"
-		if !cmd.ValueNull {
-			// look up fund id
-			var fundID int32
-			fundID, err = cat.FundID(db, cmd.Value)
-			if err != nil {
-				return cmderr("looking up fund: " + err.Error())
-			}
-			if fundID == 0 {
-				return cmderr("fund \"" + cmd.Value + "\" does not exist")
-			}
-			// ensure fund is valid for project
-			var inProject bool
-			inProject, err = cat.ProjectFundExists(db, projectID, fundID)
-			if err != nil {
-				return cmderr("looking up project fund: " + err.Error())
-			}
-			if !inProject {
-				return cmderr("fund \"" + cmd.Value + "\" is not selected for project")
-			}
-			cmd.Value = strconv.FormatInt(int64(fundID), 10)
-		}
-	default:
-		return cmderr("attribute \"" + cmd.Attr + "\" is not valid for update")
 	}
 
 	sql, err := cmd.SQL()

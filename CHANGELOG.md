@@ -1,5 +1,8 @@
 # development
 
+* The command `update` now supports setting multiple attributes at
+  once.
+
 * Added minimal property `title` to sets.
 
 * The command `select version()` has been replaced with the command

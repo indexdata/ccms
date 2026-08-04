@@ -57,6 +57,9 @@ import (
 %type <nodeList> arg_expr_list
 %type <nodeList> arg_expr
 
+%type <nodeList> set_clause_list
+%type <nodeList> set_clause
+
 %token GT_OR_EQUAL
 %token LT_OR_EQUAL
 %token NOT_EQUAL
@@ -389,21 +392,37 @@ show_stmt:
 		}
 
 update_stmt:
-	UPDATE name SET name '=' name WHERE name '=' NUMBER
+	UPDATE name SET set_clause_list WHERE name '=' NUMBER
 		{
-			$$ = &ast.UpdateStmt{Set: $2, Attr: $4, Value: $6, IDAttr: $8, IDValue: &ast.Number{Value: $10}}
+			$$ = &ast.UpdateStmt{Set: $2, SetClause: $4, IDAttr: $6, IDValue: &ast.Number{Value: $8}}
 		}
-	| UPDATE name SET name '=' NULL WHERE name '=' NUMBER
+
+set_clause_list:
+	set_clause
 		{
-			$$ = &ast.UpdateStmt{Set: $2, Attr: $4, ValueNull: true, IDAttr: $8, IDValue: &ast.Number{Value: $10}}
+			$$ = $1
 		}
-	| UPDATE name SET FUND '=' name WHERE name '=' NUMBER
+	| set_clause_list ',' set_clause
 		{
-			$$ = &ast.UpdateStmt{Set: $2, Attr: "fund", Value: $6, IDAttr: $8, IDValue: &ast.Number{Value: $10}}
+			$$ = append($1, $3...)
 		}
-	| UPDATE name SET FUND '=' NULL WHERE name '=' NUMBER
+
+set_clause:
+	name '=' name
 		{
-			$$ = &ast.UpdateStmt{Set: $2, Attr: "fund", ValueNull: true, IDAttr: $8, IDValue: &ast.Number{Value: $10}}
+			$$ = []ast.Node{&ast.SetClause{Attr: $1, Value: $3}}
+		}
+	| name '=' NULL
+		{
+			$$ = []ast.Node{&ast.SetClause{Attr: $1, ValueNull: true}}
+		}
+	| FUND '=' name
+		{
+			$$ = []ast.Node{&ast.SetClause{Attr: "fund", Value: $3}}
+		}
+	| FUND '=' NULL
+		{
+			$$ = []ast.Node{&ast.SetClause{Attr: "fund", ValueNull: true}}
 		}
 
 select_attr_list:

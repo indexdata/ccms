@@ -4,26 +4,29 @@ Update object attributes
 
 [source,subs="verbatim,quotes"]
 ----
-update `**_project_name_**`.object
-    set `**_attribute_**` = { `*_value_*` | null }
+update `**_set_name_**`
+    set `**_attribute_**` = { `*_value_*` | null } [, ...]
     where id = `*_object_id_*`
 ----
 
 [discrete]
 ===== Description
 
-The `update` command changes the value of the specified attribute for
-an object having a specified ID.
+The `update` command changes the value of specified attributes for an
+object having a specified ID.
+
+Note that the values of updated attributes are shared by all sets
+within a project.
 
 [discrete]
 ===== Parameters
 
-The first argument specifies the object set to be updated.
+The first argument specifies a set to be updated.
 
 [discrete]
 ====== set
 
-The `set` clause specifies the attribute to set and its new value.
+The `set` clause specifies the attributes to set and their new values.
 
 [discrete]
 ====== where
@@ -33,8 +36,8 @@ The `where` clause specifies the object ID.
 [discrete]
 ===== Examples
 
-To set the fund in an object having ID = 12:
+To set the decision and fund in an object having ID = 12:
 
 ----
-update myproj.object set fund = cultural where id = 12;
+update myproj.myset set decision = true, fund = cultural where id = 12;
 ----

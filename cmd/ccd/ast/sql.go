@@ -169,30 +169,68 @@ func (u *UpdateStmt) SQL() (string, error) {
 	return b.String(), nil
 }
 
+// if updating a user-defined set:
+// insert into p.object select a.id from  p.s_s a  left join p.object o on a.id=o.id where a.id>1 on conflict (id) do nothing;
+// update p.object o set decision=true from  p.s_s a  where o.id=a.id and a.id>1;
+//
+// if updating the object set:
+// insert into p.object select a.id from  ccms.reserve a  left join p.object o on a.id=o.id where a.id>1 on conflict (id) do nothing;
+// update p.object o set decision=true from  ccms.reserve a  where o.id=a.id and a.id>1;
+// ----
 func (u *UpdateStmt) sql(b *strings.Builder) error {
-	if u.ValueNull {
-		b.WriteString("update ")
-		b.WriteString(u.Set)
-		b.WriteString(" set ")
-		b.WriteString(u.Attr)
-		b.WriteString("=null where id=")
-		b.WriteString(u.IDValue.Value)
+	project, set := util.ParsePair(u.Set)
+
+	// ensure rows exist before update
+	b.WriteString("insert into ")
+	b.WriteString(project)
+	b.WriteString(".object select a.id from ")
+	if set == "object" {
+		b.WriteString("ccms.reserve")
 	} else {
-		b.WriteString("insert into ")
-		b.WriteString(u.Set)
-		b.WriteString(" (id, ")
-		b.WriteString(u.Attr)
-		b.WriteString(") values (")
-		b.WriteString(u.IDValue.Value)
-		b.WriteString(", ")
-		b.WriteString(u.Value)
-		b.WriteString(")")
-		b.WriteString(" on conflict (id) do update set ")
-		b.WriteString(u.Attr)
-		b.WriteRune('=')
-		b.WriteString(u.Value)
+		b.WriteString(cat.SetTable(project, set))
 	}
+	b.WriteString(" a left join p.object o on a.id=o.id where ")
+
+	b.WriteString("a.id=")
+	b.WriteString(u.IDValue.Value)
+
+	b.WriteString(" on conflict (id) do nothing; ")
+
+	// update
+	b.WriteString("update ")
+	b.WriteString(project)
+	b.WriteString(".object o set ")
+	updateSetClauseSQL(b, u.SetClause)
+	b.WriteString(" from ")
+	if set == "object" {
+		b.WriteString("ccms.reserve")
+	} else {
+		b.WriteString(cat.SetTable(project, set))
+	}
+	b.WriteString(" a where o.id=a.id and ")
+
+	b.WriteString("a.id=")
+	b.WriteString(u.IDValue.Value)
+
+	b.WriteRune(';')
+
 	return nil
+}
+
+func updateSetClauseSQL(b *strings.Builder, setClause []Node) {
+	for i := range setClause {
+		if i != 0 {
+			b.WriteRune(',')
+		}
+		si := setClause[i].(*SetClause)
+		b.WriteString(si.Attr)
+		b.WriteRune('=')
+		if si.ValueNull {
+			b.WriteString("null")
+		} else {
+			b.WriteString(si.Value)
+		}
+	}
 }
 
 type evalState struct {

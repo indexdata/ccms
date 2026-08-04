@@ -160,16 +160,22 @@ type QueryClause struct {
 func (*QueryClause) node() {}
 
 type UpdateStmt struct {
-	Set           string
-	Attr          string
-	ValueNull     bool
-	Value         string
-	StringLiteral bool
-	IDAttr        string
-	IDValue       *Number
+	Set       string
+	SetClause []Node
+	IDAttr    string
+	IDValue   *Number
 }
 
 func (*UpdateStmt) node() {}
+
+type SetClause struct {
+	Attr      string
+	ValueNull bool
+	Value     string
+	// StringLiteral bool
+}
+
+func (*SetClause) node() {}
 
 type WhereClause struct {
 	Valid     bool

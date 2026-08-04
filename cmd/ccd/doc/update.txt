@@ -2,22 +2,25 @@ update
 
 Update object attributes
 
-update project_name.object
-    set attribute = { value | null }
+update set_name
+    set attribute = { value | null } [, ...]
     where id = object_id
 
 Description
 
-The update command changes the value of the specified attribute for an object
+The update command changes the value of specified attributes for an object
 having a specified ID.
+
+Note that the values of updated attributes are shared by all sets within a
+project.
 
 Parameters
 
-The first argument specifies the object set to be updated.
+The first argument specifies a set to be updated.
 
 set
 
-The set clause specifies the attribute to set and its new value.
+The set clause specifies the attributes to set and their new values.
 
 where
 
@@ -25,7 +28,7 @@ The where clause specifies the object ID.
 
 Examples
 
-To set the fund in an object having ID = 12:
+To set the decision and fund in an object having ID = 12:
 
-update myproj.object set fund = cultural where id = 12;
+update myproj.myset set decision = true, fund = cultural where id = 12;
 
