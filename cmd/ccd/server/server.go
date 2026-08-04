@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -31,6 +32,7 @@ import (
 )
 
 type svr struct {
+	mu sync.Mutex
 	// cat *cat.Catalog
 	conf *config.Config
 	opt  *option.Server
@@ -225,6 +227,9 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 	// if !noLog {
 	// 	log.Info("[%d] %s (%s) - %q", rqid, addr, user, req.Commands)
 	// }
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	tx, err := conn.Begin(ctx)
 	if err != nil {
