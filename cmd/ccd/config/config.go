@@ -11,6 +11,7 @@ import (
 
 type Config struct {
 	DB       *Database
+	Log      *Log
 	Security *Security
 }
 
@@ -23,6 +24,13 @@ type Database struct {
 	SSLMode  string
 }
 
+type Log struct {
+	Summary    bool
+	Connection bool
+	Statement  bool
+	Duration   bool
+}
+
 type Security struct {
 	SecretKey []byte
 }
@@ -33,16 +41,7 @@ func New(datadir string) (*Config, error) {
 		return nil, err
 	}
 
-	s := c.Section("security")
-	secretKey, err := readSecretKey(s.Key("secret_key").String())
-	if err != nil {
-		return nil, err
-	}
-	security := &Security{
-		SecretKey: secretKey,
-	}
-
-	s = c.Section("db.main")
+	s := c.Section("db.main")
 	db := &Database{
 		Host:     s.Key("host").String(),
 		Port:     s.Key("port").String(),
@@ -52,8 +51,26 @@ func New(datadir string) (*Config, error) {
 		SSLMode:  s.Key("sslmode").String(),
 	}
 
+	s = c.Section("log")
+	log := &Log{
+		Summary:    configBool(s.Key("summary").String()),
+		Connection: configBool(s.Key("connection").String()),
+		Statement:  configBool(s.Key("statement").String()),
+		Duration:   configBool(s.Key("duration").String()),
+	}
+
+	s = c.Section("security")
+	secretKey, err := readSecretKey(s.Key("secret_key").String())
+	if err != nil {
+		return nil, err
+	}
+	security := &Security{
+		SecretKey: secretKey,
+	}
+
 	return &Config{
 		DB:       db,
+		Log:      log,
 		Security: security,
 	}, nil
 }
@@ -67,6 +84,12 @@ func InitStub() string {
 		"password = \n" +
 		"dbname = \n" +
 		"sslmode = require\n" +
+		"\n" +
+		"[log]\n" +
+		"summary = on\n" +
+		"connection = off\n" +
+		"statement = off\n" +
+		"duration = off\n" +
 		"\n" +
 		"[security]\n" +
 		"secret_key = " + key + "\n" +
@@ -88,4 +111,13 @@ func readSecretKey(key string) ([]byte, error) {
 		return nil, fmt.Errorf("reading secret key: %v", err)
 	}
 	return k, nil
+}
+
+func configBool(onOrOff string) bool {
+	switch strings.ToLower(onOrOff) {
+	case "on":
+		return true
+	default:
+		return false
+	}
 }

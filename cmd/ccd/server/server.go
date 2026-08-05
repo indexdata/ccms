@@ -173,6 +173,13 @@ func (s *svr) handleCommand(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int64) {
+	var startTime time.Time
+	if s.conf.Log.Duration {
+		startTime = time.Now()
+	} else {
+		_ = startTime
+	}
+
 	addr, _, _ := net.SplitHostPort(r.RemoteAddr)
 
 	ctx := context.TODO()
@@ -193,7 +200,17 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 		return
 	}
 
-	log.Info("[%d] %s (%s) - %q", rqid, addr, user, strings.TrimSpace(req.Commands))
+	commandsEscaped := fmt.Sprintf("%q", strings.TrimSpace(req.Commands))
+	commands := commandsEscaped[1 : len(commandsEscaped)-1]
+	if s.conf.Log.Summary {
+		log.Info("[%d] %s (%s) - %s", rqid, addr, user, commands)
+	}
+	if s.conf.Log.Connection {
+		log.Info("[%d] connection: %s (%s)", rqid, addr, user)
+	}
+	if s.conf.Log.Statement {
+		log.Info("[%d] statement: %s", rqid, commands)
+	}
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -310,6 +327,10 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 			sendError(w, rqid, "commit: "+err.Error())
 			return
 		}
+	}
+
+	if s.conf.Log.Duration {
+		log.Info("[%d] duration: %.4f s", rqid, time.Since(startTime).Seconds())
 	}
 
 	sendResponse(w, rqid, resp)
