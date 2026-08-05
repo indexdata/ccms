@@ -5,6 +5,9 @@
 
 * Added minimal property `title` to sets.
 
+* Server configuration now supports logging connections, statements,
+  and duration.
+
 * The command `select version()` has been replaced with the command
   `show version`.
 
