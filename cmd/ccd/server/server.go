@@ -185,7 +185,7 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 	ctx := context.TODO()
 	conn, err := dbx.Connect(ctx, s.conf.DB.ConnString())
 	if err != nil {
-		sendError(w, rqid, err.Error())
+		s.sendError(w, rqid, "", err.Error())
 		return
 	}
 	defer conn.Close(ctx)
@@ -206,15 +206,15 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 		log.Info("[%d] %s (%s) - %s", rqid, addr, user, commands)
 	}
 	if s.conf.Log.Connection {
-		log.Info("[%d] connection: %s (%s)", rqid, addr, user)
+		log.Info("[%d] connection:  %s (%s)", rqid, addr, user)
 	}
 	if s.conf.Log.Statement {
-		log.Info("[%d] statement: %s", rqid, commands)
+		logStatement(rqid, commands)
 	}
 
 	defer func() {
 		if r := recover(); r != nil {
-			sendError(w, rqid, fmt.Sprintf("internal server error: %v", r))
+			s.sendError(w, rqid, commands, fmt.Sprintf("internal server error: %v", r))
 			return
 		}
 	}()
@@ -223,7 +223,7 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 	var node ast.Node
 	node, err = parser.Parse(req.Commands)
 	if err != nil {
-		sendError(w, rqid, strings.Split(err.Error(), "\n")[0])
+		s.sendError(w, rqid, commands, strings.Split(err.Error(), "\n")[0])
 		return
 	}
 	//if node == nil {
@@ -245,7 +245,7 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 
 	tx, err := conn.Begin(ctx)
 	if err != nil {
-		sendError(w, rqid, "start transaction: "+err.Error())
+		s.sendError(w, rqid, commands, "start transaction: "+err.Error())
 		return
 	}
 	defer tx.Rollback(ctx)
@@ -312,35 +312,47 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 		if result.Status() == "error" {
 			errorState = true
 			resp.SetError(i)
-			log.Info("[%d] error: %s", rqid, strings.Split(result.Message(), "\n")[0])
+			s.logStatementIfNotLogged(rqid, commands)
+			log.Info("[%d] error:  %s", rqid, strings.Split(result.Message(), "\n")[0])
 			break
 		}
 	}
 
 	if errorState {
 		if err = tx.Rollback(ctx); err != nil {
-			sendError(w, rqid, "rollback: "+err.Error())
+			s.sendError(w, rqid, commands, "rollback: "+err.Error())
 			return
 		}
 	} else {
 		if err = tx.Commit(ctx); err != nil {
-			sendError(w, rqid, "commit: "+err.Error())
+			s.sendError(w, rqid, commands, "commit: "+err.Error())
 			return
 		}
 	}
 
 	if s.conf.Log.Duration {
-		log.Info("[%d] duration: %.4f s", rqid, time.Since(startTime).Seconds())
+		log.Info("[%d] duration:  %.4f s", rqid, time.Since(startTime).Seconds())
 	}
 
 	sendResponse(w, rqid, resp)
 }
 
-func sendError(w http.ResponseWriter, rqid int64, message string) {
-	log.Info("[%d] error: %s", rqid, message)
+func (s *svr) sendError(w http.ResponseWriter, rqid int64, commands, message string) {
+	s.logStatementIfNotLogged(rqid, commands)
+	log.Info("[%d] error:  %s", rqid, message)
 	resp := ccms.NewResponse()
 	resp.AddResult(cmderr(message))
 	sendResponse(w, rqid, resp)
+}
+
+func (s *svr) logStatementIfNotLogged(rqid int64, commands string) {
+	if commands != "" && !s.conf.Log.Summary && !s.conf.Log.Statement {
+		logStatement(rqid, commands)
+	}
+}
+
+func logStatement(rqid int64, commands string) {
+	log.Info("[%d] statement:  %s", rqid, commands)
 }
 
 func sendResponse(w http.ResponseWriter, rqid int64, resp *ccms.Response) {

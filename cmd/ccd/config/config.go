@@ -86,7 +86,7 @@ func InitStub() string {
 		"sslmode = require\n" +
 		"\n" +
 		"[log]\n" +
-		"summary = on\n" +
+		"summary = off\n" +
 		"connection = off\n" +
 		"statement = off\n" +
 		"duration = off\n" +
