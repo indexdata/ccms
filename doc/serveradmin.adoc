@@ -86,6 +86,15 @@ user = _database user that is the owner of the database_
 password = _password of user_
 dbname = _database name_
 sslmode = _should be set to "require" or stronger option_
+
+[log]
+summary = _on or off: log brief summary of connection and statements_
+connection = _on or off: log connection details_
+statement = _on or off: log SQL statements_
+duration = _on or off: log elapsed time of completed statements_
+
+[security]
+secret_key = _encryption key: do not edit_
 ----
 
 This file should be edited to add database connection parameters, for
