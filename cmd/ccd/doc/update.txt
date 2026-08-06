@@ -25,7 +25,7 @@ The set clause specifies the attributes to set and their new values.
 where
 
 The where clause specifies a search condition in the form of a Boolean
-expression. Only objects that satisfy this condition will be retrieved.
+expression. Only objects that satisfy this condition will be updated.
 
 See also Reference > Queries.
 
