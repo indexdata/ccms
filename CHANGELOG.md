@@ -3,6 +3,12 @@
 * The command `update` now supports setting multiple attributes at
   once.
 
+* The command `update` now supports a general search condition in the
+  `where` clause.
+
+* Search conditions now support the `in` operator to test equality
+  with multiple values.
+
 * Added minimal property `title` to sets.
 
 * Server configuration now supports logging connections, statements,

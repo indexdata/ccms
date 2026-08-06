@@ -394,9 +394,9 @@ show_stmt:
 		}
 
 update_stmt:
-	UPDATE name SET set_clause_list WHERE name '=' NUMBER
+	UPDATE name SET set_clause_list where_clause
 		{
-			$$ = &ast.UpdateStmt{Set: $2, SetClause: $4, IDAttr: $6, IDValue: &ast.Number{Value: $8}}
+			$$ = &ast.UpdateStmt{Set: $2, SetClause: $4, Where: $5}
 		}
 
 set_clause_list:

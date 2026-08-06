@@ -2,9 +2,9 @@ update
 
 Update object attributes
 
-update set_name
+update project_name.object
     set attribute = { value | null } [, ...]
-    where id = object_id
+    where search_condition
 
 Description
 
@@ -16,7 +16,7 @@ project.
 
 Parameters
 
-The first argument specifies a set to be updated.
+The first argument specifies the object set to be updated.
 
 set
 
@@ -24,7 +24,10 @@ The set clause specifies the attributes to set and their new values.
 
 where
 
-The where clause specifies the object ID.
+The where clause specifies a search condition in the form of a Boolean
+expression. Only objects that satisfy this condition will be retrieved.
+
+See also Reference > Queries.
 
 Examples
 

@@ -161,23 +161,20 @@ func (s *QueryClause) sql(db *dbx.DB, a, b *strings.Builder) error {
 	return nil
 }
 
-func (u *UpdateStmt) SQL() (string, error) {
+func (u *UpdateStmt) SQL(db *dbx.DB) (string, error) {
 	var b strings.Builder
-	if err := u.sql(&b); err != nil {
+	if err := u.sql(db, new(strings.Builder), &b); err != nil {
 		return "", err
 	}
 	return b.String(), nil
 }
 
-// if updating a user-defined set:
-// insert into p.object select a.id from  p.s_s a  left join p.object o on a.id=o.id where a.id>1 on conflict (id) do nothing;
-// update p.object o set decision=true from  p.s_s a  where o.id=a.id and a.id>1;
-//
-// if updating the object set:
-// insert into p.object select a.id from  ccms.reserve a  left join p.object o on a.id=o.id where a.id>1 on conflict (id) do nothing;
-// update p.object o set decision=true from  ccms.reserve a  where o.id=a.id and a.id>1;
-// ----
-func (u *UpdateStmt) sql(b *strings.Builder) error {
+func (u *UpdateStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
+	w := u.Where.(*WhereClause)
+	if !w.Valid {
+		return errors.New("\"where\" clause is required")
+	}
+
 	project, set := util.ParsePair(u.Set)
 
 	// ensure rows exist before update
@@ -185,16 +182,17 @@ func (u *UpdateStmt) sql(b *strings.Builder) error {
 	b.WriteString(project)
 	b.WriteString(".object select a.id from ")
 	if set == "object" {
-		b.WriteString("ccms.reserve")
+		b.WriteString("ccms.attr")
 	} else {
 		b.WriteString(cat.SetTable(project, set))
 	}
-	b.WriteString(" a left join p.object o on a.id=o.id where ")
+	b.WriteString(" a left join p.object o on a.id=o.id where (")
 
-	b.WriteString("a.id=")
-	b.WriteString(u.IDValue.Value)
+	if err := evalExpr(db, a, b, w.Condition, true, evalState{}); err != nil {
+		return err
+	}
 
-	b.WriteString(" on conflict (id) do nothing; ")
+	b.WriteString(") on conflict (id) do nothing; ")
 
 	// update
 	b.WriteString("update ")
@@ -203,15 +201,17 @@ func (u *UpdateStmt) sql(b *strings.Builder) error {
 	updateSetClauseSQL(b, u.SetClause)
 	b.WriteString(" from ")
 	if set == "object" {
-		b.WriteString("ccms.reserve")
+		b.WriteString("ccms.attr")
 	} else {
 		b.WriteString(cat.SetTable(project, set))
 	}
-	b.WriteString(" a where o.id=a.id and ")
+	b.WriteString(" a where o.id=a.id and (")
 
-	b.WriteString("a.id=")
-	b.WriteString(u.IDValue.Value)
+	if err := evalExpr(db, a, b, w.Condition, true, evalState{}); err != nil {
+		return err
+	}
 
+	b.WriteRune(')')
 	b.WriteRune(';')
 
 	return nil

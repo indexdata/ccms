@@ -4,9 +4,9 @@ Update object attributes
 
 [source,subs="verbatim,quotes"]
 ----
-update `**_set_name_**`
+update `**_project_name_**`.object
     set `**_attribute_**` = { `*_value_*` | null } [, ...]
-    where id = `*_object_id_*`
+    where `*_search_condition_*`
 ----
 
 [discrete]
@@ -21,7 +21,7 @@ within a project.
 [discrete]
 ===== Parameters
 
-The first argument specifies a set to be updated.
+The first argument specifies the object set to be updated.
 
 [discrete]
 ====== set
@@ -31,7 +31,11 @@ The `set` clause specifies the attributes to set and their new values.
 [discrete]
 ====== where
 
-The `where` clause specifies the object ID.
+The `where` clause specifies a search condition in the form of a
+Boolean expression.  Only objects that satisfy this condition will be
+retrieved.
+
+See also *Reference > Queries*.
 
 [discrete]
 ===== Examples

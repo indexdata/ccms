@@ -16,12 +16,8 @@ import (
 func updateStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.UpdateStmt) *ccms.Result {
 	project, set := util.ParsePair(cmd.Set)
 
-	setExists, err := cat.SetExists(db, project, set)
-	if err != nil {
-		return cmderr(err.Error())
-	}
-	if !setExists {
-		return cmderr("set \"" + cmd.Set + "\" does not exist")
+	if set != "object" {
+		return cmderr("set \"" + cmd.Set + "\" is not valid for update")
 	}
 
 	projectID, err := cat.ProjectID(db, project)
@@ -31,19 +27,6 @@ func updateStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.UpdateStmt) *ccms.Resul
 
 	if projectID == 0 {
 		return cmderr("project \"" + project + "\" does not exist")
-	}
-
-	if cmd.IDAttr != "id" {
-		return cmderr("attribute \"" + cmd.IDAttr + "\" is not valid with update")
-	}
-
-	idInt, _ := strconv.ParseInt(cmd.IDValue.Value, 10, 64)
-	idExists, err := objectIDExists(db, idInt)
-	if err != nil {
-		return cmderr("checking if object ID exists: " + err.Error())
-	}
-	if !idExists {
-		return cmderr("object id = " + cmd.IDValue.Value + " does not exist")
 	}
 
 	for i := range cmd.SetClause {
@@ -84,7 +67,7 @@ func updateStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.UpdateStmt) *ccms.Resul
 		}
 	}
 
-	sql, err := cmd.SQL()
+	sql, err := cmd.SQL(db)
 	if err != nil {
 		return cmderr(err.Error())
 	}

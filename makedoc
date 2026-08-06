@@ -1,4 +1,5 @@
 #!/bin/sh
+# run this script after making changes to documentation
 asciidoctor -a docinfo=shared ./doc/*.adoc
 w3m ./doc/alterfund.html | head -n -1 > ./cmd/ccd/doc/alterfund.txt
 w3m ./doc/alterproject.html | head -n -1 > ./cmd/ccd/doc/alterproject.txt

@@ -162,8 +162,7 @@ func (*QueryClause) node() {}
 type UpdateStmt struct {
 	Set       string
 	SetClause []Node
-	IDAttr    string
-	IDValue   *Number
+	Where     Node
 }
 
 func (*UpdateStmt) node() {}
