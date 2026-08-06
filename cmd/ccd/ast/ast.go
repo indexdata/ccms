@@ -234,6 +234,13 @@ type LikeExpr struct {
 	Expr2 Node
 }
 
+type InExpr struct {
+	Expr1     Node
+	ValueList []Node
+}
+
+func (*InExpr) node() {}
+
 func (*LikeExpr) node() {}
 
 type ILikeExpr struct {

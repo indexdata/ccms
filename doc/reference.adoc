@@ -46,7 +46,7 @@ operands.
 
 The supported operators, in order of precedence, are:
 
-[%header,width=75%,cols="5,2,5"]
+[%header,width=75%,cols="6,1,5"]
 |===
 |Operator
 |Associativity
@@ -56,7 +56,7 @@ The supported operators, in order of precedence, are:
 |
 |filtering operator
 
-|`=` `<>` `<` `>` `\<=` `>=` `like` `ilike`
+|`=` `<>` `<` `>` `\<=` `>=` `like` `ilike` `in`
 |
 |comparison operators
 

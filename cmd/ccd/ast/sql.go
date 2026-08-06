@@ -272,6 +272,17 @@ func evalExpr(db *dbx.DB, a, b *strings.Builder, expr Node, root bool, state eva
 		if err := evalExprOptAttr(db, a, b, e.Expr2, state); err != nil {
 			return err
 		}
+	case *InExpr:
+		if err := evalExprOptAttr(db, a, b, e.Expr1, state); err != nil {
+			return err
+		}
+		a.WriteString(" in (")
+		b.WriteString(" in (")
+		if err := evalExprValueList(db, a, b, e.ValueList, state); err != nil {
+			return err
+		}
+		a.WriteRune(')')
+		b.WriteRune(')')
 	case *LikeExpr:
 		if err := evalExprOptAttr(db, a, b, e.Expr1, state); err != nil {
 			return err
@@ -436,6 +447,37 @@ func evalExprOptAttr(db *dbx.DB, a, b *strings.Builder, expr Node, state evalSta
 	default:
 		if err := evalExpr(db, a, b, expr, false, state); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+func evalExprValueList(db *dbx.DB, a, b *strings.Builder, expr []Node, state evalState) error {
+	for i := range expr {
+		if i != 0 {
+			a.WriteString(", ")
+			b.WriteRune(',')
+		}
+		switch e := expr[i].(type) {
+		case *Number:
+			a.WriteString(e.Value)
+			b.WriteString(e.Value)
+		case *SLiteral:
+			a.WriteRune('\'')
+			a.WriteString(e.Value)
+			a.WriteRune('\'')
+			b.WriteRune('\'')
+			b.WriteString(e.Value)
+			b.WriteRune('\'')
+		case *Name:
+			if e.Value == "true" || e.Value == "false" {
+				a.WriteString(e.Value)
+				b.WriteString(e.Value)
+			} else {
+				return errors.New("invalid value expression \"" + e.Value + "\"")
+			}
+		default:
+			return errors.New("invalid value expression \"" + fmt.Sprintf("%v", e) + "\"")
 		}
 	}
 	return nil

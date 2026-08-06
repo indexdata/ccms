@@ -59,6 +59,8 @@ import (
 
 %type <nodeList> set_clause_list
 %type <nodeList> set_clause
+%type <nodeList> value_expr_list
+%type <nodeList> value_expr
 
 %token GT_OR_EQUAL
 %token LT_OR_EQUAL
@@ -549,6 +551,26 @@ equality_expr:
 	| equality_expr NOT_EQUAL relational_expr
 		{
 			$$ = &ast.NotEqualExpr{Expr1: $1, Expr2: $3}
+		}
+	| equality_expr IN '(' value_expr_list ')'
+		{
+			$$ = &ast.InExpr{Expr1: $1, ValueList: $4}
+		}
+
+value_expr_list:
+	value_expr
+		{
+			$$ = $1
+		}
+	| value_expr_list ',' value_expr
+		{
+			$$ = append($1, $3...)
+		}
+
+value_expr:
+	primary_expr
+		{
+			$$ = []ast.Node{$1}
 		}
 
 relational_expr:
