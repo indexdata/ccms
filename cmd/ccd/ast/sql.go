@@ -186,7 +186,9 @@ func (u *UpdateStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
 	} else {
 		b.WriteString(cat.SetTable(project, set))
 	}
-	b.WriteString(" a left join p.object o on a.id=o.id where (")
+	b.WriteString(" a left join ")
+	b.WriteString(project)
+	b.WriteString(".object o on a.id=o.id where (")
 
 	if err := evalExpr(db, a, b, w.Condition, true, evalState{}); err != nil {
 		return err
