@@ -21,6 +21,7 @@ import (
 %type <nodeList> stmt_list
 %type <node> alter_fund_stmt
 %type <node> alter_project_stmt
+%type <node> alter_set_stmt
 %type <node> archive_project_stmt
 %type <node> create_filter_stmt
 %type <node> create_fund_stmt
@@ -164,6 +165,10 @@ basic_stmt:
 		{
 			$$ = $1
 		}
+	| alter_set_stmt
+		{
+			$$ = $1
+		}
 	| archive_project_stmt
 		{
 			$$ = $1
@@ -269,6 +274,16 @@ alter_project_stmt:
 	| ALTER PROJECT name ALTER PROPERTY name DROP ALL
 		{
 			$$ = &ast.AlterProjectStmt{Project: $3, Property: $6, Action: ast.Drop, Value: "*"}
+		}
+
+alter_set_stmt:
+	ALTER SET name ALTER PROPERTY name SET name
+		{
+			$$ = &ast.AlterSetStmt{Set: $3, Property: $6, Action: ast.Set, Value: $8, StringLiteral: false}
+		}
+	| ALTER SET name ALTER PROPERTY name SET SLITERAL
+		{
+			$$ = &ast.AlterSetStmt{Set: $3, Property: $6, Action: ast.Set, Value: ast.DecodeSLiteral($8), StringLiteral: true}
 		}
 
 create_filter_stmt:

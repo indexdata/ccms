@@ -1,0 +1,34 @@
+alter set
+
+Change the definition of a set
+
+alter set set_name
+    alter property property_name set value
+
+Description
+
+The alter set command changes the definition of a set.
+
+The alter property clause changes a property in the set’s metadata.
+
+Parameters
+
+set_name      The name of the set.
+
+property_name The name of the property in the set metadata.
+
+value         The value of a single-value property.
+
+Properties
+
+Property     Type       Value
+name     single-value identifier
+
+title    single-value text
+
+Examples
+
+Set the title of set s to Main Set:
+
+alter set s alter property title set 'Main Set';
+

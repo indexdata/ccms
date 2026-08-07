@@ -54,9 +54,9 @@ func DropFund(db *dbx.DB, fund string) error {
 
 // returns fund ID, or 0 if fund does not exist
 func FundID(db *dbx.DB, fund string) (int32, error) {
-	var q = "select id from ccms.fund where name=$1"
+	sql := "select id from ccms.fund where name=$1"
 	var id int32
-	err := db.QueryRow(db.Ctx, q, fund).Scan(&id)
+	err := db.QueryRow(db.Ctx, sql, fund).Scan(&id)
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
 		return 0, nil
@@ -105,7 +105,10 @@ func FundProperties(db *dbx.DB, fund string) ([][2]string, error) {
 func AlterFundSetProperty(db *dbx.DB, fund, property, value string, stringLiteral bool) error {
 	switch property {
 	case "name":
-		if stringLiteral || value == "" {
+		if stringLiteral {
+			return invalidValueError(property, "'"+value+"'")
+		}
+		if value == "" {
 			return invalidValueError(property, value)
 		}
 	case "title":

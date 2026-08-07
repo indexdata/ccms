@@ -261,6 +261,8 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 			result = alterFundStmt(s, dbtx, rqid, cmd)
 		case *ast.AlterProjectStmt:
 			result = alterProjectStmt(s, dbtx, rqid, cmd)
+		case *ast.AlterSetStmt:
+			result = alterSetStmt(s, dbtx, rqid, cmd)
 		case *ast.ArchiveProjectStmt:
 			result = cmderr("\"archive project\" is no longer supported; use \"drop project\"")
 

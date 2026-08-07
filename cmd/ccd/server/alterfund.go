@@ -10,7 +10,7 @@ import (
 func alterFundStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.AlterFundStmt) *ccms.Result {
 	fundID, err := cat.FundID(db, cmd.Fund)
 	if err != nil {
-		return cmderr("checking if fund exists: " + err.Error())
+		return cmderr(err.Error())
 	}
 	if fundID == 0 {
 		return cmderr("fund \"" + cmd.Fund + "\" does not exist")

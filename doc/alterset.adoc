@@ -1,30 +1,30 @@
-==== alter fund
+==== alter set
 
-Change the definition of a fund
+Change the definition of a set
 
 [source,subs="verbatim,quotes"]
 ----
-alter fund `*_fund_name_*`
+alter set `*_set_name_*`
     alter property `*_property_name_*` set `*_value_*`
 ----
 
 [discrete]
 ===== Description
 
-The `alter fund` command changes the definition of a fund.
+The `alter set` command changes the definition of a set.
 
-The `alter property` clause changes a property in the fund's metadata.
+The `alter property` clause changes a property in the set's metadata.
 
 [discrete]
 ===== Parameters
 
 [frame=none,grid=none,cols="1,2"]
 |===
-|`*_fund_name_*`
-|The name of the fund.
+|`*_set_name_*`
+|The name of the set.
 
 |`*_property_name_*`
-|The name of the property in the fund metadata.
+|The name of the property in the set metadata.
 
 |`*_value_*`
 |The value of a single-value property.
@@ -51,8 +51,8 @@ The `alter property` clause changes a property in the fund's metadata.
 [discrete]
 ===== Examples
 
-Set the title of fund `f` to `Main Fund`:
+Set the title of set `s` to `Main Set`:
 
 ----
-alter fund f alter property title set 'Main Fund';
+alter set s alter property title set 'Main Set';
 ----

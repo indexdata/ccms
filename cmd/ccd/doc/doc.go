@@ -19,6 +19,13 @@ func AlterProject() string {
 	return strings.TrimSpace(alterProjectTxt)
 }
 
+//go:embed alterset.txt
+var alterSetTxt string
+
+func AlterSet() string {
+	return strings.TrimSpace(alterSetTxt)
+}
+
 //go:embed createfilter.txt
 var createFilterTxt string
 

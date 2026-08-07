@@ -12,7 +12,7 @@ func Error(err error) error {
 	case *pgconn.PgError:
 		return errors.New(pgString(e))
 	default:
-		return err
+		return errors.New(strings.TrimPrefix(e.Error(), "ERROR: "))
 	}
 }
 

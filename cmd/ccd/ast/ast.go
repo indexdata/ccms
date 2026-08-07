@@ -32,6 +32,16 @@ type AlterProjectStmt struct {
 
 func (*AlterProjectStmt) node() {}
 
+type AlterSetStmt struct {
+	Set           string
+	Property      string
+	Action        AlterAction
+	Value         string
+	StringLiteral bool
+}
+
+func (*AlterSetStmt) node() {}
+
 type ArchiveProjectStmt struct {
 }
 

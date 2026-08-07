@@ -13,9 +13,9 @@ The alter property clause changes a property in the fund’s metadata.
 
 Parameters
 
-fund_name     The name of the project.
+fund_name     The name of the fund.
 
-property_name The name of the property in the project metadata.
+property_name The name of the property in the fund metadata.
 
 value         The value of a single-value property.
 
