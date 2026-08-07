@@ -10,7 +10,10 @@ import (
 )
 
 func deleteStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DeleteStmt) *ccms.Result {
-	fromProject, fromSet := util.ParsePair(cmd.From)
+	fromProject, fromSet, err := util.ParsePair(cmd.From)
+	if err != nil {
+		return cmderr(err.Error())
+	}
 
 	validTargetSet, err := cat.IsValidTargetSet(db, fromProject, fromSet)
 	if err != nil {

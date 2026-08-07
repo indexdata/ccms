@@ -14,7 +14,10 @@ import (
 )
 
 func updateStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.UpdateStmt) *ccms.Result {
-	project, set := util.ParsePair(cmd.Set)
+	project, set, err := util.ParsePair(cmd.Set)
+	if err != nil {
+		return cmderr(err.Error())
+	}
 
 	if set != "object" {
 		return cmderr("set \"" + cmd.Set + "\" is not valid for update")

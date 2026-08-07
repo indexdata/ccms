@@ -11,7 +11,10 @@ import (
 )
 
 func createFilterStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.CreateFilterStmt) *ccms.Result {
-	project, filter := util.ParsePair(cmd.Filter)
+	project, filter, err := util.ParsePair(cmd.Filter)
+	if err != nil {
+		return cmderr(err.Error())
+	}
 
 	// is target filter valid?
 	if project == "" || filter == "" {

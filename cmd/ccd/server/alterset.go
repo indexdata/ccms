@@ -9,7 +9,7 @@ import (
 )
 
 func alterSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.AlterSetStmt) *ccms.Result {
-	project, set, err := util.NewParsePair(cmd.Set)
+	project, set, err := util.ParsePair(cmd.Set)
 	if err != nil {
 		return cmderr(err.Error())
 	}

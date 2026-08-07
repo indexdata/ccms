@@ -32,7 +32,10 @@ func selectStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.SelectStmt) *ccms.Resul
 	}
 
 	from := cmd.Query.(*ast.QueryClause).From
-	fromProject, fromSet := util.ParsePair(from)
+	fromProject, fromSet, err := util.ParsePair(from)
+	if err != nil {
+		return cmderr(err.Error())
+	}
 	projectID, err := cat.ProjectID(db, fromProject)
 	if err != nil {
 		return cmderr("checking if project exists: " + err.Error())

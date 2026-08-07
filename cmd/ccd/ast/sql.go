@@ -40,7 +40,10 @@ func (s *DeleteStmt) SQL(db *dbx.DB) (string, error) {
 }
 
 func (s *DeleteStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
-	fromProject, fromSet := util.ParsePair(s.From)
+	fromProject, fromSet, err := util.ParsePair(s.From)
+	if err != nil {
+		return err
+	}
 
 	fromTable := cat.SetTable(fromProject, fromSet)
 	table := dbx.ParseTable(fromTable)
@@ -78,7 +81,10 @@ func (s *InsertStmt) SQL(db *dbx.DB) (string, error) {
 }
 
 func (s *InsertStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
-	intoProject, intoSet := util.ParsePair(s.Into)
+	intoProject, intoSet, err := util.ParsePair(s.Into)
+	if err != nil {
+		return err
+	}
 
 	b.WriteString("insert into ")
 	b.WriteString(cat.SetTable(intoProject, intoSet))
@@ -118,7 +124,10 @@ func (s *SelectStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
 }
 
 func (s *QueryClause) sql(db *dbx.DB, a, b *strings.Builder) error {
-	fromProject, fromSet := util.ParsePair(s.From)
+	fromProject, fromSet, err := util.ParsePair(s.From)
+	if err != nil {
+		return err
+	}
 
 	fromTable := cat.SetTable(fromProject, fromSet)
 	table := dbx.ParseTable(fromTable)
@@ -175,7 +184,10 @@ func (u *UpdateStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
 		return errors.New("\"where\" clause is required")
 	}
 
-	project, set := util.ParsePair(u.Set)
+	project, set, err := util.ParsePair(u.Set)
+	if err != nil {
+		return err
+	}
 
 	// ensure rows exist before update
 	b.WriteString("insert into ")

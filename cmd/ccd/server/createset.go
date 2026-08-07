@@ -9,7 +9,10 @@ import (
 )
 
 func createSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.CreateSetStmt) *ccms.Result {
-	project, set := util.ParsePair(cmd.Set)
+	project, set, err := util.ParsePair(cmd.Set)
+	if err != nil {
+		return cmderr(err.Error())
+	}
 
 	setExists, err := cat.SetExists(db, project, set)
 	if err != nil {

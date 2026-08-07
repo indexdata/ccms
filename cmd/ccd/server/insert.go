@@ -18,7 +18,10 @@ func insertStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.InsertStmt) *ccms.Resul
 		return cmderr("\"offset\" is not supported with insert")
 	}
 
-	intoProject, intoSet := util.ParsePair(cmd.Into)
+	intoProject, intoSet, err := util.ParsePair(cmd.Into)
+	if err != nil {
+		return cmderr(err.Error())
+	}
 	validTargetSet, err := cat.IsValidTargetSet(db, intoProject, intoSet)
 	if err != nil {
 		return cmderr("checking if target set valid: " + err.Error())
@@ -44,7 +47,10 @@ func insertStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.InsertStmt) *ccms.Resul
 	}
 
 	from := cmd.Query.(*ast.QueryClause).From
-	fromProject, fromSet := util.ParsePair(from)
+	fromProject, fromSet, err := util.ParsePair(from)
+	if err != nil {
+		return cmderr(err.Error())
+	}
 	if intoProject != fromProject {
 		return cmderr("sets \"" + intoProject + "." + intoSet + "\" and \"" + fromProject + "." + fromSet + "\" are in different projects")
 	}

@@ -9,7 +9,10 @@ import (
 )
 
 func dropSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DropSetStmt) *ccms.Result {
-	project, set := util.ParsePair(cmd.Set)
+	project, set, err := util.ParsePair(cmd.Set)
+	if err != nil {
+		return cmderr(err.Error())
+	}
 
 	validTargetSet, err := cat.IsValidTargetSet(db, project, set)
 	if err != nil {
