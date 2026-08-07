@@ -9,7 +9,9 @@
 * Search conditions now support the `in` operator to test equality
   with multiple values.
 
-* Added minimal property `title` to sets.
+* Added property `title` to sets.
+
+* Added command `alter set`.
 
 * Server configuration now supports logging connections, statements,
   and duration.
