@@ -30,7 +30,7 @@ func alterProjectStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.AlterProjectStmt)
 			return cmderr(err.Error())
 		}
 	default:
-		return cmderr(internalError + "unknown action in alter project")
+		return cmderr("unknown action in alter project")
 	}
 
 	return ccms.NewResult("alter project")

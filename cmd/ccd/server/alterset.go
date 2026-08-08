@@ -32,7 +32,7 @@ func alterSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.AlterSetStmt) *ccms.R
 			return cmderr(err.Error())
 		}
 	default:
-		return cmderr(internalError + "unknown action in alter set")
+		return cmderr("unknown action in alter set")
 	}
 
 	return ccms.NewResult("alter set")

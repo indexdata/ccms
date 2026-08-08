@@ -36,8 +36,6 @@ type svr struct {
 	opt  *option.Server
 }
 
-const internalError = "internal error: "
-
 func Start(opt *option.Server) error {
 	var err error
 	// Require datadir specified
@@ -193,7 +191,7 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 	var req protocol.Request
 	user, err := s.ReadRequest(&dbx.DB{Ctx: ctx, Queryable: conn}, w, r, &req)
 	if err != nil {
-		log.Info("[%d] %s - error: %v", rqid, addr, err)
+		log.Info("[%d] %s - ERROR:  %v", rqid, addr, err)
 		resp := ccms.NewResponse()
 		resp.AddResult(cmderr(err.Error()))
 		sendResponse(w, rqid, resp)
@@ -206,7 +204,7 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 		log.Info("[%d] %s (%s) - %s", rqid, addr, user, commands)
 	}
 	if s.conf.Log.Connection {
-		log.Info("[%d] connection:  %s (%s)", rqid, addr, user)
+		log.Info("[%d] CONNECTION:  %s (%s)", rqid, addr, user)
 	}
 	if s.conf.Log.Statement {
 		logStatement(rqid, commands)
@@ -214,7 +212,7 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 
 	defer func() {
 		if r := recover(); r != nil {
-			s.sendError(w, rqid, commands, fmt.Sprintf("internal server error: %v", r))
+			s.sendError(w, rqid, commands, fmt.Sprintf("%v", r))
 			return
 		}
 	}()
@@ -315,7 +313,7 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 			errorState = true
 			resp.SetError(i)
 			s.logStatementIfNotLogged(rqid, commands)
-			log.Info("[%d] error:  %s", rqid, strings.Split(result.Message(), "\n")[0])
+			log.Info("[%d] ERROR:  %s", rqid, strings.Split(result.Message(), "\n")[0])
 			break
 		}
 	}
@@ -330,10 +328,9 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 			s.sendError(w, rqid, commands, "commit: "+err.Error())
 			return
 		}
-	}
-
-	if s.conf.Log.Duration {
-		log.Info("[%d] duration:  %.4f s", rqid, time.Since(startTime).Seconds())
+		if s.conf.Log.Duration {
+			log.Info("[%d] DURATION:  %.4f s", rqid, time.Since(startTime).Seconds())
+		}
 	}
 
 	sendResponse(w, rqid, resp)
@@ -341,7 +338,7 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 
 func (s *svr) sendError(w http.ResponseWriter, rqid int64, commands, message string) {
 	s.logStatementIfNotLogged(rqid, commands)
-	log.Info("[%d] error:  %s", rqid, message)
+	log.Info("[%d] ERROR:  %s", rqid, message)
 	resp := ccms.NewResponse()
 	resp.AddResult(cmderr(message))
 	sendResponse(w, rqid, resp)
@@ -354,14 +351,14 @@ func (s *svr) logStatementIfNotLogged(rqid int64, commands string) {
 }
 
 func logStatement(rqid int64, commands string) {
-	log.Info("[%d] statement:  %s", rqid, commands)
+	log.Info("[%d] STATEMENT:  %s", rqid, commands)
 }
 
 func sendResponse(w http.ResponseWriter, rqid int64, resp *ccms.Response) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	if err := resp.Encode(w); err != nil {
-		log.Info("[%d] internal error: encoding response: %v", rqid, err)
+		log.Info("[%d] ERROR:  encoding response: %v", rqid, err)
 	}
 }
 

@@ -202,5 +202,5 @@ func nilIfEmpty(s *string) *string {
 }
 
 func logError(e any) {
-	log.Error("harvesting: error: %v", e)
+	log.Error("ERROR:  harvesting: %v", e)
 }

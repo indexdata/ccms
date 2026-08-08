@@ -72,7 +72,7 @@ func fileExists(file string) (bool, error) {
 	return false, err
 }
 
-const errorPrefix = "ERROR:"
+const errorPrefix = "ERROR: "
 
 func main() {
 	colorMode = os.Getenv("CCC_COLOR")
@@ -251,9 +251,7 @@ func runClient() error {
 		if l == "quit" || l == "quit;" || l == "exit" || l == "exit;" {
 			break
 		}
-		if line[len(line)-1] == ';' {
-			line = line[0 : len(line)-1]
-		} else {
+		if line[len(line)-1] != ';' {
 			eout.Error(errorPrefix + " missing semicolon")
 			continue
 		}

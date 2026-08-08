@@ -2,6 +2,7 @@ package dberr
 
 import (
 	"errors"
+	"regexp"
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -12,7 +13,7 @@ func Error(err error) error {
 	case *pgconn.PgError:
 		return errors.New(pgString(e))
 	default:
-		return errors.New(strings.TrimPrefix(e.Error(), "ERROR: "))
+		return errors.New(simplify(e.Error()))
 	}
 }
 
@@ -27,8 +28,7 @@ func String(err error) string {
 
 func pgString(err *pgconn.PgError) string {
 	var b strings.Builder
-	b.WriteString("internal server error: ")
-	b.WriteString(err.Message)
+	b.WriteString(simplify(err.Message))
 	if err.Detail != "" {
 		b.WriteString(": ")
 		b.WriteString(err.Detail)
@@ -40,3 +40,10 @@ func pgString(err *pgconn.PgError) string {
 	}
 	return b.String()
 }
+
+func simplify(errString string) string {
+	s := strings.TrimPrefix(errString, "ERROR: ")
+	return string(sqlstate.ReplaceAll([]byte(s), []byte("")))
+}
+
+var sqlstate = regexp.MustCompile(` \(SQLSTATE [0-9A-Z]+\)`)

@@ -22,7 +22,7 @@ func alterFundStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.AlterFundStmt) *ccms
 			return cmderr(err.Error())
 		}
 	default:
-		return cmderr(internalError + "unknown action in alter fund")
+		return cmderr("unknown action in alter fund")
 	}
 
 	return ccms.NewResult("alter fund")

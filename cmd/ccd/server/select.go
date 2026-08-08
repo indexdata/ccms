@@ -7,6 +7,7 @@ import (
 	"github.com/indexdata/ccms"
 	"github.com/indexdata/ccms/cmd/ccd/ast"
 	"github.com/indexdata/ccms/cmd/ccd/cat"
+	"github.com/indexdata/ccms/cmd/ccd/dberr"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
 	"github.com/indexdata/ccms/internal/util"
 	"github.com/jackc/pgx/v5/pgtype/zeronull"
@@ -86,14 +87,14 @@ func selectStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.SelectStmt) *ccms.Resul
 		}
 		return result
 	default:
-		return cmderr(internalError + "invalid projection in select")
+		return cmderr("invalid projection in select")
 	}
 }
 
 func runQueryCount(s *svr, db *dbx.DB, sql string) (*ccms.Result, error) {
 	var count int64
 	if err := db.QueryRow(db.Ctx, sql).Scan(&count); err != nil {
-		return nil, errors.New(internalError + err.Error())
+		return nil, dberr.Error(err)
 	}
 	result := ccms.NewResult("select")
 	result.AddField("count", "bigint")
@@ -104,7 +105,7 @@ func runQueryCount(s *svr, db *dbx.DB, sql string) (*ccms.Result, error) {
 func runQuery(s *svr, db *dbx.DB, sql string) (*ccms.Result, error) {
 	rows, err := db.Query(db.Ctx, sql)
 	if err != nil {
-		return nil, errors.New(internalError + err.Error())
+		return nil, dberr.Error(err)
 	}
 	defer rows.Close()
 	result := ccms.NewResult("select")
@@ -124,7 +125,7 @@ func runQuery(s *svr, db *dbx.DB, sql string) (*ccms.Result, error) {
 		var decisionNull *bool
 		err = rows.Scan(&id, &author, &title, &full_vendor_name, &availability, &holdingsCount, &decisionNull, &fund)
 		if err != nil {
-			return nil, errors.New(internalError + err.Error())
+			return nil, dberr.Error(err)
 		}
 		var decision bool
 		if decisionNull != nil {
@@ -137,7 +138,7 @@ func runQuery(s *svr, db *dbx.DB, sql string) (*ccms.Result, error) {
 		}
 	}
 	if err = rows.Err(); err != nil {
-		return nil, errors.New(internalError + err.Error())
+		return nil, dberr.Error(err)
 	}
 	return result, nil
 }
