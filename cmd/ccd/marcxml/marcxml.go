@@ -2,6 +2,8 @@ package marcxml
 
 import (
 	"encoding/xml"
+	"fmt"
+	"math"
 	"strings"
 )
 
@@ -56,6 +58,27 @@ func (m *MARCXML) LookupHoldingsCount() int16 {
 	return count
 }
 
+func (m *MARCXML) LookupLibraryCount() int16 {
+	sources := make(map[string]struct{})
+	df := m.Datafields
+	for i := range df {
+		if df[i].Tag == "999" && df[i].Ind1 == "1" && df[i].Ind2 == "1" {
+			sf := df[i].Subfields
+			for j := range sf {
+				if sf[j].Code == "s" {
+					sources[sf[j].Value] = struct{}{}
+				}
+				break
+			}
+		}
+	}
+	lenSources := len(sources)
+	if lenSources > math.MaxInt16 {
+		panic(fmt.Sprintf("record %q has too many unique source IDs", m.LookupControlNumber()))
+	}
+	return int16(len(sources))
+}
+
 func (m *MARCXML) LookupLibraryHoldingsCount() int16 {
 	var count int16
 	df := m.Datafields
@@ -87,6 +110,16 @@ func (m *MARCXML) LookupVendorHoldingsCount() int16 {
 		}
 	}
 	return count
+}
+
+func (m *MARCXML) LookupControlNumber() string {
+	cf := m.Controlfields
+	for i := range cf {
+		if cf[i].Tag == "001" {
+			return cf[i].Value
+		}
+	}
+	return ""
 }
 
 func (m *MARCXML) Lookup(tag, ind1, ind2, subfield string) string {

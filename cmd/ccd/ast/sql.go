@@ -623,7 +623,7 @@ func evalExprValueList(db *dbx.DB, a, b *strings.Builder, expr []Node, state eva
 func attrSQL(a, b *strings.Builder, att string) {
 	a.WriteString(att)
 	switch att {
-	case "id", "author", "title", "full_vendor_name", "availability", "library_holdings_count", "online_database_holdings_count", "vendor_holdings_count", "holdings_count":
+	case "id", "author", "title", "full_vendor_name", "availability", "library_count", "library_holdings_count", "online_database_holdings_count", "vendor_holdings_count", "holdings_count":
 		b.WriteRune('a')
 		b.WriteRune('.')
 		b.WriteString(att)

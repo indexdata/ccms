@@ -133,6 +133,7 @@ func createTableAttr(tx pgx.Tx) error {
 		"title text," +
 		"full_vendor_name text," +
 		"availability text," +
+		"library_count smallint not null," +
 		"library_holdings_count smallint not null," +
 		"online_database_holdings_count smallint not null," +
 		"vendor_holdings_count smallint not null," +
@@ -151,6 +152,9 @@ func createTableAttr(tx pgx.Tx) error {
 		return err
 	}
 	if err := createGinIndex(tx, "availability"); err != nil {
+		return err
+	}
+	if err := createBtreeIndex(tx, "library_count"); err != nil {
 		return err
 	}
 	if err := createBtreeIndex(tx, "library_holdings_count"); err != nil {

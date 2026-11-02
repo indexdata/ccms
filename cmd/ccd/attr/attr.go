@@ -27,6 +27,7 @@ var AttrSlice = []Attr{
 	{Name: "title", Projection: "a.title", Type: Text, SQLType: "text"},
 	{Name: "full_vendor_name", Projection: "a.full_vendor_name", Type: Text, SQLType: "text"},
 	{Name: "availability", Projection: "a.availability", Type: Text, SQLType: "text"},
+	{Name: "library_count", Projection: "a.library_count", Type: SmallInt, SQLType: "smallint"},
 	{Name: "library_holdings_count", Projection: "a.library_holdings_count", Type: SmallInt, SQLType: "smallint"},
 	{Name: "online_database_holdings_count", Projection: "a.online_database_holdings_count", Type: SmallInt, SQLType: "smallint"},
 	{Name: "vendor_holdings_count", Projection: "a.vendor_holdings_count", Type: SmallInt, SQLType: "smallint"},

@@ -117,7 +117,7 @@ Supported attributes are divided into two groups.  The first group are
 provided by CCMS or the original data source, and they cannot be
 modified:
 
-[%header,width=75%,cols="4,3,6"]
+[%header,width=80%,cols="4,3,6"]
 |===
 |Attribute
 |Type
@@ -143,9 +143,13 @@ modified:
 |`text`
 |`999 13 $z`
 
+|`library_count`
+|`smallint`
+|number of libraries holding the object
+
 |`library_holdings_count`
 |`smallint`
-|number of library holdings
+|number of individual items held by libraries
 
 |`online_database_holdings_count`
 |`smallint`
@@ -167,7 +171,7 @@ modified:
 The second group are shared within a project and may be modified using
 the `update` command:
 
-[%header,width=75%,cols="4,3,6"]
+[%header,width=80%,cols="4,3,6"]
 |===
 |Attribute
 |Type

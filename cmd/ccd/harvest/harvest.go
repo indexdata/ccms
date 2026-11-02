@@ -17,8 +17,9 @@ import (
 func Harvest(connString string) {
 	for {
 		harvestLoop(connString)
+		log.Info("harvesting: paused")
 		time.Sleep(1 * time.Hour)
-		log.Info("restarting harvest")
+		log.Info("harvesting: restarted")
 	}
 }
 
@@ -114,6 +115,7 @@ func harvestLoop(connString string) {
 		availability := m.Lookup("999", "1", "3", "z")
 		//placePub := m.Lookup("260", "a")
 
+		libraryCount := m.LookupLibraryCount()
 		libraryHoldingsCount := m.LookupLibraryHoldingsCount()
 		onlineDatabaseHoldingsCount := m.LookupOnlineDatabaseHoldingsCount()
 		vendorHoldingsCount := m.LookupVendorHoldingsCount()
@@ -153,9 +155,9 @@ func harvestLoop(connString string) {
 		}
 
 		if id != 0 {
-			q = "insert into ccms.attr (id, author, title, full_vendor_name, availability, library_holdings_count, online_database_holdings_count, vendor_holdings_count, holdings_count) " +
-				"values ($1, $2, $3, $4, $5, $6, $7, $8, $9) on conflict do nothing"
-			if _, err = tx.Exec(ctx, q, id, author, title, fullVendorName, availability, libraryHoldingsCount, onlineDatabaseHoldingsCount, vendorHoldingsCount, holdingsCount); err != nil {
+			q = "insert into ccms.attr (id, author, title, full_vendor_name, availability, library_count, library_holdings_count, online_database_holdings_count, vendor_holdings_count, holdings_count) " +
+				"values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) on conflict do nothing"
+			if _, err = tx.Exec(ctx, q, id, author, title, fullVendorName, availability, libraryCount, libraryHoldingsCount, onlineDatabaseHoldingsCount, vendorHoldingsCount, holdingsCount); err != nil {
 				logError("writing to table attr: " + err.Error())
 				return
 			}

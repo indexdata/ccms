@@ -1,5 +1,7 @@
 # development
 
+* Added attribute `library_count`.
+
 * The command `select` now supports specifying a list of attributes to
   display.
 
