@@ -17,7 +17,7 @@ func alterTrackStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.AlterStmt) *ccms.Re
 	}
 
 	switch cmd.Action {
-	case ast.Set:
+	case "set":
 		if err := cat.AlterTrackSetProperty(db, cmd.Name, cmd.Property, cmd.Value, cmd.StringLiteral); err != nil {
 			return cmderr(err.Error())
 		}

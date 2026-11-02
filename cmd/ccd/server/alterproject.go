@@ -17,15 +17,15 @@ func alterProjectStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.AlterStmt) *ccms.
 	}
 
 	switch cmd.Action {
-	case ast.Set:
+	case "set":
 		if err := cat.AlterProjectSetProperty(db, cmd.Name, cmd.Property, cmd.Value, cmd.StringLiteral); err != nil {
 			return cmderr(err.Error())
 		}
-	case ast.Add:
+	case "add":
 		if err := cat.AlterProjectAddToProperty(db, cmd.Name, cmd.Property, cmd.Value, cmd.StringLiteral); err != nil {
 			return cmderr(err.Error())
 		}
-	case ast.Drop:
+	case "drop":
 		if err := cat.AlterProjectDropFromProperty(db, cmd.Name, cmd.Property, cmd.Value, cmd.StringLiteral); err != nil {
 			return cmderr(err.Error())
 		}

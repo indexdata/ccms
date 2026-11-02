@@ -14,6 +14,10 @@ import (
 )
 
 func updateStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.UpdateStmt) *ccms.Result {
+	if cmd.Action != "set" {
+		return cmderr("syntax error near \"" + cmd.Action + "\"")
+	}
+
 	project, set, err := util.ParsePair(cmd.Set)
 	if err != nil {
 		return cmderr(err.Error())

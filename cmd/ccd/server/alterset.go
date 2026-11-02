@@ -27,7 +27,7 @@ func alterSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.AlterStmt) *ccms.Resu
 	}
 
 	switch cmd.Action {
-	case ast.Set:
+	case "set":
 		if err := cat.AlterSetSetProperty(db, setID, cmd.Property, cmd.Value, cmd.StringLiteral); err != nil {
 			return cmderr(err.Error())
 		}

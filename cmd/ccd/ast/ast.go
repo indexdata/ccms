@@ -2,21 +2,13 @@ package ast
 
 import "strings"
 
-type AlterAction int
-
-const (
-	Set AlterAction = iota
-	Add
-	Drop
-)
-
 /* statements */
 
 type AlterStmt struct {
 	Type          string
 	Name          string
 	Property      string
-	Action        AlterAction
+	Action        string
 	Value         string
 	StringLiteral bool
 }
@@ -163,6 +155,7 @@ func (*QueryClause) node() {}
 
 type UpdateStmt struct {
 	Set       string
+	Action    string
 	SetClause []Node
 	Where     Node
 }

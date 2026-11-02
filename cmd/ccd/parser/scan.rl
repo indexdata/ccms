@@ -89,7 +89,6 @@ func (lex *lexer) Lex(out *yySymType) int {
 			'property'i => { tok = PROPERTY; fbreak; };
 			'retrieve'i => { tok = RETRIEVE; fbreak; };
 			'select'i => { tok = SELECT; fbreak; };
-			'set'i => { tok = SET; fbreak; };
 			'show'i => { tok = SHOW; fbreak; };
 			'tag'i => { tok = TAG; fbreak; };
 			'to'i => { tok = TO; fbreak; };

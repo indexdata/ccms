@@ -95,7 +95,6 @@ import (
 %token PING
 %token RETRIEVE
 %token SELECT
-%token SET
 %token SHOW
 %token TAG
 %token TO
@@ -198,25 +197,17 @@ archive_project_stmt:
 */
 
 alter_stmt:
-	ALTER name name ALTER PROPERTY name SET name
+	ALTER name name ALTER PROPERTY name name name
 		{
-			$$ = &ast.AlterStmt{Type: $2, Name: $3, Property: $6, Action: ast.Set, Value: $8, StringLiteral: false}
+			$$ = &ast.AlterStmt{Type: $2, Name: $3, Property: $6, Action: $7, Value: $8}
 		}
-	| ALTER name name ALTER PROPERTY name SET SLITERAL
+	| ALTER name name ALTER PROPERTY name name SLITERAL
 		{
-			$$ = &ast.AlterStmt{Type: $2, Name: $3, Property: $6, Action: ast.Set, Value: ast.DecodeSLiteral($8), StringLiteral: true}
+			$$ = &ast.AlterStmt{Type: $2, Name: $3, Property: $6, Action: $7, Value: ast.DecodeSLiteral($8), StringLiteral: true}
 		}
-	| ALTER name name ALTER PROPERTY name ADD name
+	| ALTER name name ALTER PROPERTY name name ALL
 		{
-			$$ = &ast.AlterStmt{Type: $2, Name: $3, Property: $6, Action: ast.Add, Value: $8}
-		}
-	| ALTER name name ALTER PROPERTY name DROP name
-		{
-			$$ = &ast.AlterStmt{Type: $2, Name: $3, Property: $6, Action: ast.Drop, Value: $8}
-		}
-	| ALTER name name ALTER PROPERTY name DROP ALL
-		{
-			$$ = &ast.AlterStmt{Type: $2, Name: $3, Property: $6, Action: ast.Drop, Value: "*"}
+			$$ = &ast.AlterStmt{Type: $2, Name: $3, Property: $6, Action: $7, Value: "*"}
 		}
 
 create_stmt:
@@ -300,9 +291,9 @@ show_stmt:
 		}
 
 update_stmt:
-	UPDATE name SET set_clause_list where_clause
+	UPDATE name name set_clause_list where_clause
 		{
-			$$ = &ast.UpdateStmt{Set: $2, SetClause: $4, Where: $5}
+			$$ = &ast.UpdateStmt{Set: $2, Action: $3, SetClause: $4, Where: $5}
 		}
 
 set_clause_list:

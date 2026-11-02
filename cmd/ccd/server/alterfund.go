@@ -17,7 +17,7 @@ func alterFundStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.AlterStmt) *ccms.Res
 	}
 
 	switch cmd.Action {
-	case ast.Set:
+	case "set":
 		if err := cat.AlterFundSetProperty(db, cmd.Name, cmd.Property, cmd.Value, cmd.StringLiteral); err != nil {
 			return cmderr(err.Error())
 		}
