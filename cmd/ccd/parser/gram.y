@@ -201,13 +201,17 @@ alter_stmt:
 		{
 			$$ = &ast.AlterStmt{Type: $2, Name: $3, Property: $6, Action: $7, Value: $8}
 		}
+	| ALTER name name ALTER PROPERTY name DROP name
+		{
+			$$ = &ast.AlterStmt{Type: $2, Name: $3, Property: $6, Action: "drop", Value: $8}
+		}
 	| ALTER name name ALTER PROPERTY name name SLITERAL
 		{
 			$$ = &ast.AlterStmt{Type: $2, Name: $3, Property: $6, Action: $7, Value: ast.DecodeSLiteral($8), StringLiteral: true}
 		}
-	| ALTER name name ALTER PROPERTY name name ALL
+	| ALTER name name ALTER PROPERTY name DROP ALL
 		{
-			$$ = &ast.AlterStmt{Type: $2, Name: $3, Property: $6, Action: $7, Value: "*"}
+			$$ = &ast.AlterStmt{Type: $2, Name: $3, Property: $6, Action: "drop", Value: "*"}
 		}
 
 create_stmt:
