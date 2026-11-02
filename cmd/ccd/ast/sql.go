@@ -113,6 +113,7 @@ func (s *SelectStmt) SQL(db *dbx.DB) (string, []attr.Attr, error) {
 
 func (s *SelectStmt) sql(db *dbx.DB, a, b *strings.Builder, atts *[]attr.Attr) error {
 	var projection strings.Builder
+	star := false
 	attMap := make(map[string]struct{})
 	for i := range s.Projection {
 		if i != 0 {
@@ -120,35 +121,44 @@ func (s *SelectStmt) sql(db *dbx.DB, a, b *strings.Builder, atts *[]attr.Attr) e
 		}
 		switch v := s.Projection[i].(type) {
 		case *Star:
+			if star {
+				return errors.New("\"*\" specified more than once")
+			}
 			i := 0
 			for att := range attr.AllAttrs() {
 				if att.Hide {
 					break
+				}
+				_, ok := attMap[att.Name]
+				if ok {
+					return errors.New("attribute \"" + att.Name + "\" specified more than once")
 				}
 				if i > 0 {
 					projection.WriteRune(',')
 				}
 				writeAttrCoalesce(&projection, att)
 				*atts = append(*atts, att)
+				attMap[att.Name] = struct{}{}
 				i++
 			}
+			star = true
 		case *CountStar:
 			if len(s.Projection) != 1 {
 				return errors.New("\"count(*)\" cannot be combined with other expressions")
 			}
 			projection.WriteString("count(*)")
 		case *Name:
-			_, ok := attMap[v.Value]
-			if ok {
-				return errors.New("attribute \"" + v.Value + "\" specified more than once")
-			}
 			att, ok := attr.AttrName(v.Value)
 			if !ok {
 				return errors.New("attribute \"" + v.Value + "\" does not exist")
 			}
+			_, ok = attMap[att.Name]
+			if ok {
+				return errors.New("attribute \"" + att.Name + "\" specified more than once")
+			}
 			writeAttrCoalesce(&projection, att)
 			*atts = append(*atts, att)
-			attMap[v.Value] = struct{}{}
+			attMap[att.Name] = struct{}{}
 		}
 	}
 	attMap = nil

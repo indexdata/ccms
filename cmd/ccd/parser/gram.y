@@ -327,11 +327,6 @@ select_attr_list:
 			// $$ = &ast.SelectAttrList{Attr: $1}
 			$$ = $1
 		}
-	| '*'
-		{
-			// $$ = &ast.SelectAttrList{Attr: "*"}
-			$$ = []ast.Node{&ast.Star{}}
-		}
 	| COUNT '(' '*' ')'
 		{
 			// $$ = &ast.SelectAttrList{Attr: "count(*)"}
@@ -576,6 +571,11 @@ arg_expr:
 	name
 		{
 			$$ = []ast.Node{&ast.Name{Value: $1}}
+		}
+	| '*'
+		{
+			// $$ = &ast.SelectAttrList{Attr: "*"}
+			$$ = []ast.Node{&ast.Star{}}
 		}
 
 name:
