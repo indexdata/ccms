@@ -9,6 +9,10 @@ import (
 )
 
 func createSetStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.CreateStmt) *ccms.Result {
+	if cmd.Where.(*ast.WhereClause).Valid {
+		return cmderr("syntax error near \"where\"")
+	}
+
 	project, set, err := util.ParsePair(cmd.Name)
 	if err != nil {
 		return cmderr(err.Error())

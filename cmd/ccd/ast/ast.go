@@ -294,18 +294,12 @@ type NotExpr struct {
 
 func (*NotExpr) node() {}
 
-type FilterExpr struct {
-	Filter string
+type FunctionExpr struct {
+	Function string
+	Arg1     string
 }
 
-func (*FilterExpr) node() {}
-
-type TagExpr struct {
-	// ExprList []Node
-	Tag string
-}
-
-func (*TagExpr) node() {}
+func (*FunctionExpr) node() {}
 
 type ArgExprList []Node
 

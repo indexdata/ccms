@@ -49,10 +49,17 @@ func IsValidTargetSet(db *dbx.DB, project, set string) (bool, error) {
 
 // return table containing set
 func SetTable(project, set string) string {
-	if set == "object" {
-		return project + "." + set
+	if project == "" {
+		if set == "object" {
+			return set
+		}
+		return "s_" + set
+	} else {
+		if set == "object" {
+			return project + "." + set
+		}
+		return project + ".s_" + set
 	}
-	return project + ".s_" + set
 }
 
 // returns set ID, or 0 if set does not exist
@@ -183,7 +190,7 @@ func AlterSetSetProperty(db *dbx.DB, project, set string, setID int32, property,
 	}
 
 	if property == "name" {
-		sql = "alter table " + SetTable(project, set) + " rename to " + value
+		sql = "alter table " + SetTable(project, set) + " rename to " + SetTable("", value)
 		if _, err := db.Exec(db.Ctx, sql); err != nil {
 			return dberr.Error(err)
 		}

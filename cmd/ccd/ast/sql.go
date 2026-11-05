@@ -15,7 +15,7 @@ import (
 // conversion to SQL
 
 func (s *CreateStmt) SQL(db *dbx.DB, a *strings.Builder) (string, error) {
-	switch s.Name {
+	switch s.Type {
 	case "filter":
 		var b strings.Builder
 		if err := s.filterSQL(db, a, &b); err != nil {
@@ -457,36 +457,44 @@ func evalExpr(db *dbx.DB, a, b *strings.Builder, expr Node, root bool, state eva
 		if err := evalExprOptAttr(db, a, b, e.Expr2, state); err != nil {
 			return err
 		}
-	case *FilterExpr:
-		if state.filter {
-			return errors.New("filter() cannot be used in filter definition")
-		}
-
-		a.WriteString("filter(")
-		a.WriteString(e.Filter)
+	case *FunctionExpr:
+		a.WriteString(e.Function)
+		a.WriteRune('(')
+		a.WriteString(e.Arg1)
 		a.WriteRune(')')
 
 		b.WriteRune('(')
 
-		// b.WriteString(e.Filter)
-		// if err := evalExprList(b, e.ExprList); err != nil {
-		// 	return err
-		// }
-
-		f, err := cat.FilterSQL(db, e.Filter)
-		if err != nil {
-			return err
+		switch e.Function {
+		case "filter":
+			if state.filter {
+				return errors.New("filter() cannot be used in filter definition")
+			}
+			project, filter, err := util.ParsePair(e.Arg1)
+			if err != nil {
+				return err
+			}
+			projectID, err := cat.ProjectID(db, project)
+			if err != nil {
+				return err
+			}
+			f, err := cat.FilterSQL(db, projectID, filter)
+			if err != nil {
+				return err
+			}
+			b.WriteString(f)
+		default:
+			return errors.New("function " + e.Function + "() does not exist")
 		}
-		b.WriteString(f)
 
 		b.WriteRune(')')
-	case *TagExpr:
-		return fmt.Errorf("tag() is not yet supported")
-		//b.WriteString("TAG(")
-		//if err := evalExprList(b, e.ExprList); err != nil {
-		//        return err
-		//}
-		//b.WriteRune(')')
+	//case *TagExpr:
+	//        return fmt.Errorf("tag() is not yet supported")
+	//        //b.WriteString("TAG(")
+	//        //if err := evalExprList(b, e.ExprList); err != nil {
+	//        //        return err
+	//        //}
+	//        //b.WriteRune(')')
 	case *ParenExpr:
 		a.WriteRune('(')
 		b.WriteRune('(')

@@ -39,9 +39,9 @@ func FilterExists(db *dbx.DB, projectID int32, filter string) (bool, error) {
 	}
 }
 
-func FilterSQL(db *dbx.DB, filter string) (string, error) {
-	sql := "select sql from ccms.filter where name=$1"
-	rows, _ := db.Query(db.Ctx, sql, filter)
+func FilterSQL(db *dbx.DB, projectID int32, filter string) (string, error) {
+	sql := "select sql from ccms.filter where project_id=$1 and name=$2"
+	rows, _ := db.Query(db.Ctx, sql, projectID, filter)
 	filterSQL, err := pgx.CollectRows(rows, pgx.RowTo[string])
 	if err != nil {
 		return "", err

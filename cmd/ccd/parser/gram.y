@@ -73,7 +73,6 @@ import (
 %token DROP
 %token ENCRYPTED
 %token FALSE
-%token FILTER
 %token FROM
 %token ILIKE
 %token IN
@@ -214,13 +213,13 @@ alter_stmt:
 		}
 
 create_stmt:
-	CREATE name name where_clause
-		{
-			$$ = &ast.CreateStmt{Type: $2, Name: $3, Where: $4}
-		}
-	| CREATE name name WITH ENCRYPTED PASSWORD SLITERAL
+	CREATE name name WITH ENCRYPTED PASSWORD SLITERAL
 		{
 			$$ = &ast.CreateStmt{Type: $2, User: $3, EncryptedPassword: ast.DecodeSLiteral($7)}
+		}
+	| CREATE name name where_clause
+		{
+			$$ = &ast.CreateStmt{Type: $2, Name: $3, Where: $4}
 		}
 
 delete_stmt:
@@ -506,13 +505,9 @@ postfix_expr:
 		{
 			$$ = $1
 		}
-	| FILTER '(' name ')'
+	| name '(' name ')'
 		{
-			$$ = &ast.FilterExpr{Filter: $3}
-		}
-	| TAG '(' name ')'
-		{
-			$$ = &ast.TagExpr{Tag: $3}
+			$$ = &ast.FunctionExpr{Function: $1, Arg1: $3}
 		}
 
 paren_expr:
