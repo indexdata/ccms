@@ -1,0 +1,2 @@
+#!/bin/sh
+cat test.sql | tr '\n' ' ' | ./bin/ccc | cat
