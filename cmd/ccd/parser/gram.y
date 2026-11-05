@@ -58,7 +58,6 @@ import (
 %token LT_OR_EQUAL
 %token NOT_EQUAL
 
-%token ADD
 %token ALL
 %token ALTER
 %token AND
