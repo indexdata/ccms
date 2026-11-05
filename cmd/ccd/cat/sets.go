@@ -160,7 +160,7 @@ func DropAllSetsInProject(db *dbx.DB, projectID int32) error {
 	return nil
 }
 
-func AlterSetSetProperty(db *dbx.DB, setID int32, property, value string, stringLiteral bool) error {
+func AlterSetSetProperty(db *dbx.DB, project, set string, setID int32, property, value string, stringLiteral bool) error {
 	switch property {
 	case "name":
 		if stringLiteral {
@@ -181,5 +181,13 @@ func AlterSetSetProperty(db *dbx.DB, setID int32, property, value string, string
 	if _, err := db.Exec(db.Ctx, sql, value, setID); err != nil {
 		return dberr.Error(err)
 	}
+
+	if property == "name" {
+		sql = "alter table " + SetTable(project, set) + " rename to " + value
+		if _, err := db.Exec(db.Ctx, sql); err != nil {
+			return dberr.Error(err)
+		}
+	}
+
 	return nil
 }
