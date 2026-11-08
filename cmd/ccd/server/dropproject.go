@@ -24,7 +24,7 @@ func dropProjectStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DropStmt) *ccms.Re
 		if err := cat.DropAllSetsInProject(db, projectID); err != nil {
 			return cmderr(err.Error())
 		}
-		if err := cat.DropAllFiltersInProject(db, projectID); err != nil {
+		if err := cat.DropAllFiltersInProject(db, projectID, cmd.Name); err != nil {
 			return cmderr(err.Error())
 		}
 	} else {

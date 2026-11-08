@@ -78,15 +78,15 @@ func (s *DeleteStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
 	return nil
 }
 
-func (s *InsertStmt) SQL(db *dbx.DB) (string, error) {
+func (s *InsertStmt) SQL(db *dbx.DB, filter string) (string, error) {
 	var b strings.Builder
-	if err := s.sql(db, new(strings.Builder), &b); err != nil {
+	if err := s.sql(db, filter, new(strings.Builder), &b); err != nil {
 		return "", err
 	}
 	return b.String(), nil
 }
 
-func (s *InsertStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
+func (s *InsertStmt) sql(db *dbx.DB, filter string, a, b *strings.Builder) error {
 	intoProject, intoSet, err := util.ParsePair(s.Into)
 	if err != nil {
 		return err
@@ -95,23 +95,23 @@ func (s *InsertStmt) sql(db *dbx.DB, a, b *strings.Builder) error {
 	b.WriteString("insert into ")
 	b.WriteString(cat.SetTable(intoProject, intoSet))
 	b.WriteString(" select a.id ")
-	if err := s.Query.(*QueryClause).sql(db, a, b); err != nil {
+	if err := s.Query.(*QueryClause).sql(db, filter, a, b); err != nil {
 		return err
 	}
 	b.WriteString(" on conflict do nothing")
 	return nil
 }
 
-func (s *SelectStmt) SQL(db *dbx.DB) (string, []attr.Attr, error) {
+func (s *SelectStmt) SQL(db *dbx.DB, filter string) (string, []attr.Attr, error) {
 	var b strings.Builder
 	atts := make([]attr.Attr, 0)
-	if err := s.sql(db, new(strings.Builder), &b, &atts); err != nil {
+	if err := s.sql(db, filter, new(strings.Builder), &b, &atts); err != nil {
 		return "", nil, err
 	}
 	return b.String(), atts, nil
 }
 
-func (s *SelectStmt) sql(db *dbx.DB, a, b *strings.Builder, atts *[]attr.Attr) error {
+func (s *SelectStmt) sql(db *dbx.DB, filter string, a, b *strings.Builder, atts *[]attr.Attr) error {
 	var projection strings.Builder
 	star := false
 	attMap := make(map[string]struct{})
@@ -166,7 +166,7 @@ func (s *SelectStmt) sql(db *dbx.DB, a, b *strings.Builder, atts *[]attr.Attr) e
 	b.WriteString("select ")
 	b.WriteString(projection.String())
 	b.WriteRune(' ')
-	if err := s.Query.(*QueryClause).sql(db, a, b); err != nil {
+	if err := s.Query.(*QueryClause).sql(db, filter, a, b); err != nil {
 		return err
 	}
 	return nil
@@ -189,7 +189,7 @@ func writeAttrCoalesce(b *strings.Builder, att attr.Attr) {
 	b.WriteString(att.Name)
 }
 
-func (s *QueryClause) sql(db *dbx.DB, a, b *strings.Builder) error {
+func (s *QueryClause) sql(db *dbx.DB, filter string, a, b *strings.Builder) error {
 	fromProject, fromSet, err := util.ParsePair(s.From)
 	if err != nil {
 		return err
@@ -212,12 +212,30 @@ func (s *QueryClause) sql(db *dbx.DB, a, b *strings.Builder) error {
 	b.WriteString(" left join ccms.md on t.id=md.id")
 
 	w := s.Where.(*WhereClause)
-	if w.Valid {
-		b.WriteString(" where (")
-		if err := evalExpr(db, a, b, w.Condition, true, evalState{}); err != nil {
-			return err
+	if w.Valid || filter != "" {
+		b.WriteString(" where ")
+		if w.Valid && filter != "" {
+			b.WriteRune('(')
 		}
-		b.WriteRune(')')
+		if w.Valid {
+			b.WriteRune('(')
+			if err := evalExpr(db, a, b, w.Condition, true, evalState{}); err != nil {
+				return err
+			}
+			b.WriteRune(')')
+		}
+		if filter != "" {
+			if w.Valid {
+				b.WriteString(" and ")
+			}
+			fn := &FunctionExpr{Function: "filter", Arg1: filter}
+			if err := evalExpr(db, a, b, fn, true, evalState{}); err != nil {
+				return err
+			}
+		}
+		if w.Valid && filter != "" {
+			b.WriteRune(')')
+		}
 	}
 	o := s.Order.(*OrderClause)
 	if o.Valid {
@@ -357,7 +375,10 @@ func evalExpr(db *dbx.DB, a, b *strings.Builder, expr Node, root bool, state eva
 		if err := evalExprOptAttr(db, a, b, e.Expr2, state); err != nil {
 			return err
 		}
-	case *IsNullExpr:
+	case *IsExpr:
+		if e.Expr2 != "null" {
+			return errors.New("syntax error near \"" + e.Expr2 + "\"")
+		}
 		if err := evalExprOptAttr(db, a, b, e.Expr1, state); err != nil {
 			return err
 		}
@@ -504,12 +525,18 @@ func evalExpr(db *dbx.DB, a, b *strings.Builder, expr Node, root bool, state eva
 		a.WriteRune(')')
 		b.WriteRune(')')
 	case *Name:
-		att, ok := attr.AttrName(e.Value)
-		if !ok {
-			return errors.New("attribute \"" + e.Value + "\" does not exist")
-		}
-		if root && att.Type != attr.Boolean {
-			return errors.New("invalid boolean expression")
+		if e.Value == "null" {
+			if root {
+				return errors.New("invalid boolean expression")
+			}
+		} else {
+			att, ok := attr.AttrName(e.Value)
+			if !ok {
+				return errors.New("attribute \"" + e.Value + "\" does not exist")
+			}
+			if root && att.Type != attr.Boolean {
+				return errors.New("invalid boolean expression")
+			}
 		}
 		v := PrimaryExpr(expr)
 		a.WriteString(v)
@@ -532,10 +559,6 @@ func evalExpr(db *dbx.DB, a, b *strings.Builder, expr Node, root bool, state eva
 		if root {
 			return errors.New("invalid boolean expression")
 		}
-		v := PrimaryExpr(expr)
-		a.WriteString(v)
-		b.WriteString(v)
-	case *Null:
 		v := PrimaryExpr(expr)
 		a.WriteString(v)
 		b.WriteString(v)
@@ -559,8 +582,6 @@ func PrimaryExpr(expr Node) string {
 		} else {
 			return "false"
 		}
-	case *Null:
-		return "null"
 	default:
 		return ""
 	}

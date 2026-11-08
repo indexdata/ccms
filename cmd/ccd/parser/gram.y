@@ -83,7 +83,6 @@ import (
 %token LIKE
 %token LIMIT
 %token NOT
-%token NULL
 %token OFFSET
 %token OR
 %token ORDER
@@ -453,13 +452,13 @@ equality_expr:
 		{
 			$$ = &ast.InExpr{Expr1: $1, ValueList: $5, Not: true}
 		}
-	| equality_expr IS NULL
+	| equality_expr IS name
 		{
-			$$ = &ast.IsNullExpr{Expr1: $1}
+			$$ = &ast.IsExpr{Expr1: $1, Expr2: $3}
 		}
-	| equality_expr IS NOT NULL
+	| equality_expr IS NOT name
 		{
-			$$ = &ast.IsNullExpr{Expr1: $1, Not: true}
+			$$ = &ast.IsExpr{Expr1: $1, Expr2: $4, Not: true}
 		}
 
 value_expr_list:
@@ -540,10 +539,6 @@ primary_expr:
 	| FALSE
 		{
 			$$ = &ast.Boolean{}
-		}
-	| NULL
-		{
-			$$ = &ast.Null{}
 		}
 
 arg_expr_list:

@@ -64,7 +64,15 @@ func selectStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.SelectStmt) *ccms.Resul
 		}
 	}
 
-	sql, atts, err := cmd.SQL(db)
+	var filter string
+	if fromSet == "object" {
+		filter, err = cat.ProjectFilter(db, fromProject)
+		if err != nil {
+			return cmderr(err.Error())
+		}
+	}
+
+	sql, atts, err := cmd.SQL(db, filter)
 	if err != nil {
 		return cmderr(err.Error())
 	}

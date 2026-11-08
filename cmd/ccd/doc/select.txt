@@ -2,7 +2,7 @@ select
 
 Retrieve data
 
-select { attribute [, ... ] | * | count(*) }
+select { { attribute | * } [, ... ] | count(*) }
     from set_name
     [ where search_condition ]
     [ order by attribute [ asc | desc ] ]
@@ -21,9 +21,9 @@ Note select command. If a result set is larger than this, the server returns an
 
 Parameters
 
-The first argument specifies a list of attributes, or * meaning all attributes
-(except hidden attributes), or count(*) meaning a count of the number of rows
-returned.
+The first argument specifies a list of attributes, or count(*) to count the
+number of rows returned. In the list of attributes, * can be used to mean all
+attributes (except hidden attributes, which must be included by name).
 
 from
 

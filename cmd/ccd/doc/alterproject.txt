@@ -7,7 +7,7 @@ alter project project_name
 
 where action is one of:
 
-    alter property property_name set value
+    alter property property_name set { value | null }
     alter property property_name add subvalue
     alter property property_name drop { subvalue | all }
 
@@ -31,7 +31,7 @@ subvalue      A subvalue in a composite property.
 
 Properties
 
-  Property       Type                            Value
+  Property       Type                             Value
 title        single-value text
 
 action       single-value action name (acquire, retire, digitize, move, other)
@@ -45,6 +45,9 @@ origins      composite    location name (clockss, lehigh, nyu)
 destinations composite    location name
 
 tracks       composite    track name
+
+filter       single-value filter name, automatically applied to all queries on
+                          set object
 
 Examples
 

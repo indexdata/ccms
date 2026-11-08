@@ -9,7 +9,7 @@ alter project `*_project_name_*`
 
 where `*_action_*` is one of:
 
-    alter property `*_property_name_*` set `*_value_*`
+    alter property `*_property_name_*` set { `*_value_*` | null }
     alter property `*_property_name_*` add `*_subvalue_*`
     alter property `*_property_name_*` drop { `*_subvalue_*` | all }
 ----
@@ -44,7 +44,7 @@ metadata.  The `set` action is used for single-value properties, while
 [discrete]
 ===== Properties
 
-[%header,width=75%,cols="3,3,10"]
+[%header,width=80%,cols="3,3,10"]
 |===
 |Property
 |Type
@@ -77,6 +77,10 @@ metadata.  The `set` action is used for single-value properties, while
 |`tracks`
 |composite
 |track name
+
+|`filter`
+|single-value
+|filter name, automatically applied to all queries on set `object`
 |===
 
 [discrete]

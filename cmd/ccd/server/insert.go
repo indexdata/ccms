@@ -61,8 +61,15 @@ func insertStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.InsertStmt) *ccms.Resul
 	if !fromSetExists {
 		return cmderr("set \"" + from + "\" does not exist")
 	}
+	var filter string
+	if fromSet == "object" {
+		filter, err = cat.ProjectFilter(db, fromProject)
+		if err != nil {
+			return cmderr(err.Error())
+		}
+	}
 
-	sql, err := cmd.SQL(db)
+	sql, err := cmd.SQL(db, filter)
 	if err != nil {
 		return cmderr(err.Error())
 	}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/indexdata/ccms/cmd/ccd/dberr"
 	"github.com/indexdata/ccms/cmd/ccd/dbx"
+	"github.com/indexdata/ccms/internal/util"
 	"github.com/indexdata/ccms/prop"
 	"github.com/jackc/pgx/v5"
 )
@@ -630,6 +631,16 @@ func ProjectsHavingTrack(db *dbx.DB, trackID int32) ([]string, error) {
 	return projects, nil
 }
 
+func projectsHavingFilter(db *dbx.DB, filter string) ([]string, error) {
+	sql := "select name from ccms.project where filter=$1"
+	rows, _ := db.Query(db.Ctx, sql, filter)
+	projects, err := pgx.CollectRows(rows, pgx.RowTo[string])
+	if err != nil {
+		return nil, err
+	}
+	return projects, nil
+}
+
 func objectFundExists(db *dbx.DB, project string, fundID int32) (bool, error) {
 	sql := "select 1 from " + project + ".object where fund_id=$1 limit 1"
 	var n int32
@@ -705,10 +716,10 @@ func AlterProjectSetProperty(db *dbx.DB, project, property, value string, string
 	case "funds" /*"locations",*/, "origins", "destinations", "tracks":
 		return errors.New("property \"" + property + "\" is composite")
 	case "title", "mou_link":
-		if !stringLiteral {
+		if !stringLiteral && value != "null" {
 			return invalidValueError(property, value)
 		}
-	case "action":
+	case "action", "filter":
 		if stringLiteral {
 			return invalidValueError(property, value)
 		}
@@ -716,24 +727,69 @@ func AlterProjectSetProperty(db *dbx.DB, project, property, value string, string
 		return errors.New("property \"" + property + "\" does not exist")
 	}
 
+	var writeValue string
+	if (property == "title" || property == "mou_link") && value == "null" {
+		writeValue = ""
+	}
 	if property == "action" {
 		switch value {
-		case "", "acquire", "retire", "digitize", "move", "other":
-			// NOP
+		case "acquire", "retire", "digitize", "move", "other":
+			writeValue = value
+		case "null":
+			writeValue = ""
 		default:
 			return errors.New("action \"" + value + "\" does not exist")
 		}
 	}
+	if property == "filter" {
+		if value == "null" {
+			writeValue = ""
+		} else {
+			filterProject, filterName, err := util.ParsePair(value)
+			if err != nil {
+				return err
+			}
+			filterProjectID, err := ProjectID(db, filterProject)
+			if filterProjectID == 0 {
+				return errors.New("filter \"" + value + "\" does not exist")
+			}
+			if err != nil {
+				return err
+			}
+			filterExists, err := FilterExists(db, filterProjectID, filterName)
+			if !filterExists {
+				return errors.New("filter \"" + value + "\" does not exist")
+			}
+			if err != nil {
+				return err
+			}
+			writeValue = value
+		}
+	}
 
 	sql := "update ccms.project set \"" + property + "\"=$1 where name=$2"
-	if _, err := db.Exec(db.Ctx, sql, value, project); err != nil {
+	if _, err := db.Exec(db.Ctx, sql, writeValue, project); err != nil {
 		return errors.New("updating project: " + dberr.String(err))
 	}
 	return nil
 }
 
+func ProjectFilter(db *dbx.DB, project string) (string, error) {
+	sql := "select filter from ccms.project where name=$1"
+	var filter string
+	err := db.QueryRow(db.Ctx, sql, project).Scan(&filter)
+	switch {
+	case errors.Is(err, pgx.ErrNoRows):
+		return "", errors.New("project \"" + project + "\" does not exist")
+	case err != nil:
+		return "", err
+	default:
+		return filter, nil
+	}
+}
+
 func ProjectProperties(db *dbx.DB, project string) ([][2]string, error) {
-	var title, action, mouLink, funds /*locations,*/, origins, destinations, tracks string
+	var title, action, mouLink, funds /*locations,*/, origins, destinations, tracks, filter string
 	// loc as (
 	//     select p.id project_id,
 	//            coalesce(string_agg(l.name||':'||l.title, '|' order by l.name), '') locations
@@ -780,14 +836,15 @@ select p.title,
        coalesce(fnd.funds, '') funds,
        coalesce(org.origins, '') origins,
        coalesce(dst.destinations, '') destinations,
-       coalesce(trk.tracks, '') tracks
+       coalesce(trk.tracks, '') tracks,
+       p.filter
        from ccms.project p
            left join fnd on p.id=fnd.project_id
            left join org on p.id=org.project_id
            left join dst on p.id=dst.project_id
            left join trk on p.id=trk.project_id
        where p.name=$1`
-	err := db.QueryRow(db.Ctx, sql, project).Scan(&title, &action, &mouLink, &funds /*&locations,*/, &origins, &destinations, &tracks)
+	err := db.QueryRow(db.Ctx, sql, project).Scan(&title, &action, &mouLink, &funds /*&locations,*/, &origins, &destinations, &tracks, &filter)
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
 		return nil, fmt.Errorf("project %q does not exist", project)
@@ -807,6 +864,7 @@ select p.title,
 		{"origins", origins},
 		{"destinations", destinations},
 		{"tracks", tracks},
+		{"filter", filter},
 	}
 	return prop, nil
 }

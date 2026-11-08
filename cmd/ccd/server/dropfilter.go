@@ -35,7 +35,7 @@ func dropFilterStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.DropStmt) *ccms.Res
 		return cmderr("filter \"" + cmd.Name + "\" does not exist")
 	}
 
-	if err := cat.DropFilter(db, projectID, filter); err != nil {
+	if err := cat.DropFilter(db, projectID, project, filter); err != nil {
 		return cmderr(err.Error())
 	}
 

@@ -222,12 +222,13 @@ type EqualExpr struct {
 
 func (*EqualExpr) node() {}
 
-type IsNullExpr struct {
+type IsExpr struct {
 	Expr1 Node
+	Expr2 string
 	Not   bool
 }
 
-func (*IsNullExpr) node() {}
+func (*IsExpr) node() {}
 
 type InExpr struct {
 	Expr1     Node
@@ -334,11 +335,6 @@ type Boolean struct {
 }
 
 func (*Boolean) node() {}
-
-type Null struct {
-}
-
-func (*Null) node() {}
 
 type Option struct {
 	Action string

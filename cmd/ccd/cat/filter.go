@@ -81,7 +81,21 @@ func SortFilters(filters []Filter) {
 	})
 }
 
-func DropFilter(db *dbx.DB, projectID int32, filter string) error {
+func DropFilter(db *dbx.DB, projectID int32, project, filter string) error {
+	// prevent dropping a filter that is used as a default filter
+	filterName := project + "." + filter
+	projectsHavingFilter, err := projectsHavingFilter(db, filterName)
+	if err != nil {
+		return err
+	}
+	if len(projectsHavingFilter) != 0 {
+		var s string
+		if len(projectsHavingFilter) > 1 {
+			s = "s"
+		}
+		return errors.New("filter \"" + filterName + "\" is used in project" + s + " " + strings.Join(projectsHavingFilter, ", "))
+	}
+
 	sql := "delete from ccms.filter where project_id=$1 and name=$2"
 	if _, err := db.Exec(db.Ctx, sql, projectID, filter); err != nil {
 		return dberr.Error(err)
@@ -89,13 +103,13 @@ func DropFilter(db *dbx.DB, projectID int32, filter string) error {
 	return nil
 }
 
-func DropAllFiltersInProject(db *dbx.DB, projectID int32) error {
+func DropAllFiltersInProject(db *dbx.DB, projectID int32, project string) error {
 	filters, err := Filters(db)
 	if err != nil {
 		return err
 	}
 	for i := range filters {
-		if err := DropFilter(db, projectID, filters[i].Filter); err != nil {
+		if err := DropFilter(db, projectID, project, filters[i].Filter); err != nil {
 			return err
 		}
 	}

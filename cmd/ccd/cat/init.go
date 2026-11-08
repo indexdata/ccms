@@ -231,7 +231,8 @@ func createTableProject(tx pgx.Tx) error {
 		"name text not null unique," +
 		"title text not null," +
 		"action text not null default ''," + // references ccms.action (name)
-		"mou_link text not null default '')"
+		"mou_link text not null default ''," +
+		"filter text not null default '')"
 	if _, err := tx.Exec(context.TODO(), q); err != nil {
 		return fmt.Errorf("creating table ccms.project: %v", dberr.Error(err))
 	}

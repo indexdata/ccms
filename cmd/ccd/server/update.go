@@ -50,9 +50,10 @@ func updateStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.UpdateStmt) *ccms.Resul
 		case "fund":
 			si.Attr = "fund_id"
 			switch si.Value.(type) {
-			case *ast.Null:
-				// NOP
 			default:
+				if value == "null" {
+					break
+				}
 				// look up fund id
 				var fundID int32
 				fundID, err = cat.FundID(db, value)
@@ -78,9 +79,10 @@ func updateStmt(s *svr, db *dbx.DB, rqid int64, cmd *ast.UpdateStmt) *ccms.Resul
 		case "track":
 			si.Attr = "track_id"
 			switch si.Value.(type) {
-			case *ast.Null:
-				// NOP
 			default:
+				if value == "null" {
+					break
+				}
 				// look up track id
 				var trackID int32
 				trackID, err = cat.TrackID(db, value)

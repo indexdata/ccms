@@ -1,6 +1,11 @@
 # development
 
-* Added attribute `library_count`.
+* A new project property `filter` has been added.  It names an
+  existing filter that will be automatically applied to all queries on
+  the set `object` within the project.
+
+* A new attribute `library_count` has been added which contains the
+  number of libraries holding the object.
 
 * The command `select` now supports specifying a list of attributes to
   display.
