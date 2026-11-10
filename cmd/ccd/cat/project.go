@@ -727,14 +727,14 @@ func AlterProjectSetProperty(db *dbx.DB, project, property, value string, string
 		return errors.New("property \"" + property + "\" does not exist")
 	}
 
-	var writeValue string
+	writeValue := value
 	if (property == "title" || property == "mou_link") && value == "null" {
 		writeValue = ""
 	}
 	if property == "action" {
 		switch value {
 		case "acquire", "retire", "digitize", "move", "other":
-			writeValue = value
+			// NOP
 		case "null":
 			writeValue = ""
 		default:
@@ -763,7 +763,6 @@ func AlterProjectSetProperty(db *dbx.DB, project, property, value string, string
 			if err != nil {
 				return err
 			}
-			writeValue = value
 		}
 	}
 
