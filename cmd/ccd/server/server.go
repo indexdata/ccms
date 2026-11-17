@@ -79,7 +79,7 @@ func databaseServer(opt *option.Server) error {
 	}
 
 	// ensure database is initialized and compatible
-	err = cat.Initialize(opt.Program, conf.DB.ConnString(), conf.Security)
+	err = cat.Initialize(opt.Program, conf.DB.ConnString(), conf.Security, opt.Test)
 	if err != nil {
 		return err
 	}
@@ -129,11 +129,13 @@ func serve(s *svr) {
 		Addr:    addr,
 		Handler: setupHandlers(s),
 	}
-	log.Info("CCMS %s, listening on %s", global.Version, addr)
-	if s.opt.NoTLS && s.opt.Listen != "" {
+	if !s.conf.Log.Quiet {
+		log.Info("CCMS %s, listening on %s", global.Version, addr)
+	}
+	if s.opt.NoTLS && s.opt.Listen != "" && !s.conf.Log.Quiet {
 		log.Warning("disabled TLS (insecure)")
 	}
-	if s.opt.NoHarvest {
+	if s.opt.NoHarvest && !s.conf.Log.Quiet {
 		log.Warning("disabled harvesting")
 	}
 	// cat.Init()
@@ -294,7 +296,9 @@ func (s *svr) handleCommandPost(w http.ResponseWriter, r *http.Request, rqid int
 			errorState = true
 			resp.SetError(i)
 			s.logStatementIfNotLogged(rqid, commands)
-			log.Info("[%d] ERROR:  %s", rqid, strings.Split(result.Message(), "\n")[0])
+			if !s.conf.Log.Quiet {
+				log.Info("[%d] ERROR:  %s", rqid, strings.Split(result.Message(), "\n")[0])
+			}
 			break
 		}
 	}
@@ -326,7 +330,7 @@ func (s *svr) sendError(w http.ResponseWriter, rqid int64, commands, message str
 }
 
 func (s *svr) logStatementIfNotLogged(rqid int64, commands string) {
-	if commands != "" && !s.conf.Log.Summary && !s.conf.Log.Statement {
+	if commands != "" && !s.conf.Log.Summary && !s.conf.Log.Statement && !s.conf.Log.Quiet {
 		logStatement(rqid, commands)
 	}
 }

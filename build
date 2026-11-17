@@ -2,8 +2,8 @@
 set -e
 
 fast='false'
+runvet='false'
 runtests='false'
-runalltests='false'
 verbose='false'
 
 usage() {
@@ -12,20 +12,20 @@ usage() {
     echo 'Builds the "ccd" and "ccc" executables in the bin directory'
     echo ''
     echo 'Flags:'
-    echo '-T  Run tests'
-    echo '-t  Run tests and other checks'
+    echo '-a  Run static program analysis'
+    echo '-t  Run software tests'
     echo '-v  Enable verbose output'
     echo '-f  Fast build (do not remove executable before compiling)'
     echo '-h  Help'
 }
 
-while getopts 'fhtvT' flag; do
+while getopts 'afhtv' flag; do
     case "${flag}" in
-        T) runtests='true' ;;
-        t) runalltests='true' ;;
+        a) runvet='true' ;;
         f) fast='true' ;;
         h) usage
             exit 1 ;;
+        t) runtests='true' ;;
         v) verbose='true' ;;
         *) usage
             exit 1 ;;
@@ -60,11 +60,7 @@ version=`git describe --always`
 # -X github.com/metadb-project/metadb/cmd/metadb/util.MetadbVersion=
 go build -o $bindir $v $tags -ldflags "-X github.com/indexdata/ccms/internal/global.Version=$version" ./cmd/ccd ./cmd/ccc
 
-#if $runtests || $runalltests; then
-#    go test $v -vet=off -count=1 ./ccms/util 1>&2
-#fi
-
-if $runalltests; then
+if $runvet; then
     # go get tool
     go vet $v $tags $(go list ./cmd/... | grep -v 'github.com/indexdata/ccms/cmd/ccd/parser') 2>&1 | while read s; do echo "build: $s" 1>&2; done
     go tool shadow ./...
@@ -76,3 +72,12 @@ if $runalltests; then
     #go tool govulncheck ./...
 fi
 
+# for color tests:  go install github.com/rakyll/gotest@latest
+if $runtests; then
+    gotest=$GOPATH/bin/gotest
+    if [ ! -f "$gotest" ]; then
+	gotest="go test"
+    fi
+    $gotest -v -vet=off -count=1 ./cmd/ccd/server 1>&2
+    echo ''
+fi

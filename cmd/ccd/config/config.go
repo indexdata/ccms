@@ -29,6 +29,7 @@ type Log struct {
 	Connection bool
 	Statement  bool
 	Duration   bool
+	Quiet      bool
 }
 
 type Security struct {
@@ -57,6 +58,7 @@ func New(datadir string) (*Config, error) {
 		Connection: configBool(s.Key("connection").String()),
 		Statement:  configBool(s.Key("statement").String()),
 		Duration:   configBool(s.Key("duration").String()),
+		Quiet:      configBool(s.Key("quiet").String()),
 	}
 
 	s = c.Section("security")
@@ -90,6 +92,7 @@ func InitStub() string {
 		"connection = off\n" +
 		"statement = off\n" +
 		"duration = off\n" +
+		"quiet = off\n" +
 		"\n" +
 		"[security]\n" +
 		"secret_key = " + key + "\n" +

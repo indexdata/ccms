@@ -92,6 +92,7 @@ summary = _on or off: log brief summary of connection and statements_
 connection = _on or off: log connection details_
 statement = _on or off: log SQL statements_
 duration = _on or off: log elapsed time of completed statements_
+quiet = _on or off: disable most logging_
 
 [security]
 secret_key = _encryption key: do not edit_

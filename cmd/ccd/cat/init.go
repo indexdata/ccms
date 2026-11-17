@@ -25,7 +25,7 @@ type auth struct {
 	salt      []byte
 }
 
-func Initialize(program string, connString string, security *config.Security) error {
+func Initialize(program string, connString string, security *config.Security, test bool) error {
 	ctx := context.TODO()
 	conn, err := dbx.Connect(ctx, connString)
 	if err != nil {
@@ -38,7 +38,7 @@ func Initialize(program string, connString string, security *config.Security) er
 		return fmt.Errorf("checking if database initialized: %v", err)
 	}
 	if !exists {
-		if err = createSystemSchema(program, conn, ctx, security); err != nil {
+		if err = createSystemSchema(program, conn, ctx, security, test); err != nil {
 			return err
 		}
 	} else {
@@ -441,7 +441,7 @@ func initSchemaExists(conn *pgx.Conn, ctx context.Context) (bool, error) {
 	}
 }
 
-func createSystemSchema(program string, conn *pgx.Conn, ctx context.Context, security *config.Security) error {
+func createSystemSchema(program string, conn *pgx.Conn, ctx context.Context, security *config.Security, test bool) error {
 	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return dberr.Error(err)
@@ -463,7 +463,7 @@ func createSystemSchema(program string, conn *pgx.Conn, ctx context.Context, sec
 			return fmt.Errorf("creating table %s: %v", t.table, err)
 		}
 	}
-	if err = writeAdminUser(tx, security); err != nil {
+	if err = writeAdminUser(tx, security, test); err != nil {
 		return fmt.Errorf("adding admin user: %v", dberr.Error(err))
 	}
 
@@ -473,14 +473,20 @@ func createSystemSchema(program string, conn *pgx.Conn, ctx context.Context, sec
 	return nil
 }
 
-func writeAdminUser(tx pgx.Tx, security *config.Security) error {
-	eout.Info("setting up new \"admin\" user")
-	adminPassword, err := crypto.InputPassword("Password for \"admin\": ", true)
-	if err != nil {
-		return err
-	}
-	if strings.TrimSpace(adminPassword) == "" {
-		return errors.New("password is required")
+func writeAdminUser(tx pgx.Tx, security *config.Security, test bool) error {
+	var adminPassword string
+	var err error
+	if test {
+		adminPassword = "test"
+	} else {
+		eout.Info("setting up new \"admin\" user")
+		adminPassword, err = crypto.InputPassword("Password for \"admin\": ", true)
+		if err != nil {
+			return err
+		}
+		if strings.TrimSpace(adminPassword) == "" {
+			return errors.New("password is required")
+		}
 	}
 
 	salt := crypto.RandomKey()

@@ -67,8 +67,8 @@ func (m *MARCXML) LookupLibraryCount() int16 {
 			for j := range sf {
 				if sf[j].Code == "s" {
 					sources[sf[j].Value] = struct{}{}
+					break
 				}
-				break
 			}
 		}
 	}
