@@ -1,6 +1,6 @@
 module github.com/indexdata/ccms
 
-go 1.27.3
+go 1.27.4
 
 require (
 	github.com/chzyer/readline v1.5.1
