@@ -479,7 +479,7 @@ func writeAdminUser(tx pgx.Tx, security *config.Security, test bool) error {
 	if test {
 		adminPassword = "test"
 	} else {
-		eout.Info("setting up new \"admin\" user")
+		eout.Info("Setting up new \"admin\" user")
 		adminPassword, err = crypto.InputPassword("Password for \"admin\": ", true)
 		if err != nil {
 			return err

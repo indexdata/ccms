@@ -92,15 +92,17 @@ func harvestLoop(connString string) {
 		*/
 		// fmt.Printf("%#v\n", record.Metadata)
 		// fmt.Printf("%q\n", record.Metadata.Body)
-		m, err := marcxml.Unmarshal(record.Metadata.Body)
+		identifier := strings.TrimPrefix(record.Header.Identifier, "oai:")
+		metadata := strings.TrimSpace(string(record.Metadata.Body))
+		var m *marcxml.MARCXML
+		var err error
+		m, err = marcxml.Unmarshal(record.Metadata.Body)
 		//m, err := marcxml.Unmarshal(rs.GetRecord.Record.Metadata.Body)
 		if err != nil {
 			// fmt.Printf("----\n%s\n----\n", string(record.Metadata.Body))
-			logError("unmarshalling: " + err.Error())
-			return
+			logError("parsing: " + identifier + ": " + err.Error())
+			// return
 		}
-		metadata := strings.TrimSpace(string(record.Metadata.Body))
-		identifier := strings.TrimPrefix(record.Header.Identifier, "oai:")
 		dateStamp := record.Header.DateStamp
 		author100a := m.Lookup("100", "", "", "a")
 		author := nilIfEmpty(&author100a)
